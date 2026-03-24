@@ -53,7 +53,7 @@ function Receipt({ booking, onClose }) {
     win.document.write(`
       <html>
         <head>
-          <title>Booking Receipt — Comfort Serene Apartment</title>
+          <title>Booking Receipt — Comfort Service Apartment</title>
           <style>
             @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Lato:wght@300;400&display=swap');
             * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -88,7 +88,7 @@ function Receipt({ booking, onClose }) {
           <div className="receipt">
             <div className="text-center border-b border-[#C9A84C]/40 pb-6 mb-8">
               <div className="font-playfair text-2xl font-semibold">
-                Comfort <span style={{ color: "#C9A84C" }}>Serene Apartment</span>
+                Comfort <span style={{ color: "#C9A84C" }}>Service Apartment</span>
               </div>
               <div className="text-[10px] tracking-[0.25em] uppercase text-white/40 mt-2">Official Booking Receipt</div>
               <div className="mt-3">
@@ -140,7 +140,7 @@ function Receipt({ booking, onClose }) {
             </div>
 
             <div className="text-center text-[10px] text-white/20 mt-6 border-t border-white/5 pt-4">
-              Receipt generated on {new Date().toLocaleString()} · Comfort Serene Apartment
+              Receipt generated on {new Date().toLocaleString()} · Comfort Service Apartment
             </div>
           </div>
         </div>
@@ -334,7 +334,7 @@ function BookingForm({ onBooked, allBookings }) {
             <div className="space-y-3">
               {[
                 ["Bank",           "First Bank"],
-                ["Account Name",   "Comfort Serene Apartment"],
+                ["Account Name",   "Comfort Service Apartment"],
                 ["Account Number", "5326761655"],
                 ["Amount",         `₦${amount.toLocaleString()}`],
               ].map(([l, v]) => (
@@ -432,7 +432,7 @@ export default function DashboardPage() {
         <div className="flex items-center gap-3">
           {["bookings", "new"].map((t) => (
             <button key={t} onClick={() => setActiveTab(t)}
-              className={`text-[10px] tracking-widest uppercase px-4 py-2 rounded-lg transition-colors
+              className={`text-[10px] tracking-widest uppercase px-4 py-2 rounded-lg transition-colors cursor-pointer
                 ${activeTab === t
                   ? "bg-[#C9A84C]/15 text-[#C9A84C] border border-[#C9A84C]/30"
                   : "text-white/50 hover:text-white border border-transparent hover:border-white/10"}`}>
@@ -445,7 +445,7 @@ export default function DashboardPage() {
           <button
             onClick={handleLogout}
             disabled={loggingOut}
-            className="flex items-center gap-2 text-[10px] tracking-widest uppercase px-4 py-2 rounded-lg border border-white/20 text-white hover:bg-white/5 hover:border-white/40 disabled:opacity-50 transition-all duration-200 font-medium">
+            className="flex items-center gap-2 text-[10px] tracking-widest uppercase px-4 py-2 rounded-lg border border-white/20 text-white hover:bg-white/5 hover:border-white/40 disabled:opacity-50 transition-all duration-200 font-medium cursor-pointer">
             {loggingOut ? (
               <>
                 <span className="w-3 h-3 border border-white/40 border-t-white rounded-full animate-spin" />

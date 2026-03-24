@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import {
   FaEye, FaEyeSlash, FaEnvelope, FaLock
@@ -95,16 +96,19 @@ export default function SignupPage() {
   return (
     <div className="bg-[#0a0a0a] flex min-h-screen">
 
- {/* ══ LEFT PANEL ══ */}
-<div
-  className="hidden lg:flex lg:w-1/2 h-screen flex-shrink-0 overflow-hidden relative"
-  style={{
-    backgroundImage: `url('https://res.cloudinary.com/dwhga1raw/image/upload/v1774100982/SWZ_6383_medvry.jpg')`,
-    backgroundSize: 'cover',
-    backgroundPosition: 'center',
-    backgroundRepeat: 'no-repeat',
-  }}
->
+   {/* ══ LEFT PANEL ══ */}
+{/* ══ LEFT PANEL ══ */}
+<div className="hidden lg:block lg:w-1/2 relative h-screen flex-shrink-0 overflow-hidden">
+  {/* Image */}
+  <Image
+    src="https://res.cloudinary.com/dwhga1raw/image/upload/v1774100982/SWZ_6383_medvry.jpg"
+    alt="Comfort Service Apartment"
+    fill
+    style={{ objectFit: 'cover', objectPosition: 'center' }}
+    unoptimized
+    priority
+  />
+
   {/* Overlays */}
   <div className="absolute inset-0 z-10 bg-gradient-to-r from-[#0a0a0a]/20 to-[#0a0a0a]/60" />
   <div className="absolute inset-0 z-10 bg-gradient-to-t from-[#0a0a0a]/95 via-[#0a0a0a]/20 to-transparent" />
@@ -154,7 +158,7 @@ export default function SignupPage() {
             {/* mobile logo */}
             <div className="lg:hidden text-center mb-8">
               <Link href="/" className="font-playfair text-xl text-white tracking-wide">
-                Comfort <span className="text-[#C9A84C]">Service</span>
+                Comfort <span className="text-[#C9A84C]">Service Apartment</span>
               </Link>
             </div>
 

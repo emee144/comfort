@@ -2,9 +2,10 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { 
   FaWifi, FaSnowflake, FaTv, FaUtensils, FaBolt, 
-  FaParking, FaLock, FaSwimmingPool,
+  FaParking, FaLock,
   FaPhone, FaWhatsapp, FaEnvelope, FaMapMarkerAlt,
   FaFacebookF, FaInstagram, FaTwitter,
   FaSun
@@ -60,7 +61,6 @@ export default function HomePage() {
     { icon: <FaBolt />,          name: '24/7 Generator' },
     { icon: <FaParking />,       name: 'Free Parking' },
     { icon: <FaLock />,          name: '24/7 Security' },
-    { icon: <FaSwimmingPool />,  name: 'Swimming Pool' },
     { icon: <FaSun />,           name: 'Solar' },
   ]
 
@@ -77,14 +77,14 @@ export default function HomePage() {
     name: 'Chioma E.',
     date: 'January 2026',
     rating: 5,
-    text: 'We stayed for 4 nights and it felt like home. The generator never failed once and the WiFi was blazing fast. Very clean and secure.'
+    text: 'We stayed for 4 nights and it felt like home. The generator never failed once and the WiFi was blazing fast. There is also solar for supply. Very clean and secure.'
   },
   {
     initial: 'T',
     name: 'Tunde F.',
     date: 'March 2026',
     rating: 5,
-    text: 'Great value for money! The pool was a wonderful bonus. Host was very responsive on WhatsApp. Even better in person than the photos!'
+    text: 'Great value for money! The serene environment was a wonderful bonus. Host was very responsive on WhatsApp. Even better in person than the photos!'
   },
   {
     initial: 'F',
@@ -128,7 +128,7 @@ const galleryImages = [
         ${scrolled ? 'py-3 bg-[#0a0a0a]/95 backdrop-blur-md border-b border-white/5' : 'py-6 bg-transparent'}`}>
 
         <a href="#" className="font-playfair text-xl font-semibold tracking-wide">
-          Comfort <span className="text-[#C9A84C]">Serene Apartment</span>
+          Comfort <span className="text-[#C9A84C]">Service Apartment</span>
         </a>
 
         <ul className="hidden md:flex gap-10 list-none">
@@ -152,7 +152,7 @@ const galleryImages = [
         <div className="absolute inset-0">
   <Image
     src="https://res.cloudinary.com/dwhga1raw/image/upload/v1774100984/SWZ_6387_vbfwa2.jpg"
-    alt="Comfort Serene Apartment"
+    alt="Comfort Service Apartment"
     fill
     style={{ objectFit: 'cover' }}
     priority
@@ -175,8 +175,8 @@ const galleryImages = [
             Where Luxury<br />Meets <em className="text-[#C9A84C]">Comfort</em>
           </h1>
 
-          <p className="animate-fadeUp delay-300 text-sm md:text-base text-white/60 tracking-[0.15em] mb-12 max-w-lg mx-auto leading-relaxed">
-            A premium 2-bedroom retreat or self-catering apartment in the heart of Ibadan.<br />
+          <p className="animate-fadeUp delay-300 text-sm md:text-base text-white/80 tracking-[0.15em] mb-12 max-w-lg mx-auto leading-relaxed">
+            A premium 2-bedroom retreat, self-catering or self-contain apartment in the heart of Ibadan.<br />
             Book direct. Pay secure. Arrive happy.
           </p>
 
@@ -348,7 +348,7 @@ const galleryImages = [
         Book Your<br /><em className="text-[#C9A84C]">Stay Today</em>
       </h2>
       <p className="text-white/60 text-sm leading-relaxed mb-10">
-        Secure your stay at Comfort Serene Apartment in just a few clicks. 
+        Secure your stay at Comfort Service Apartment in just a few clicks. 
         Fill in your details, choose your dates and pay via bank transfer.
       </p>
 
@@ -358,7 +358,8 @@ const galleryImages = [
           'Payment via secure bank transfer',
           'Free cancellation 48hrs before check-in',
           '24/7 WhatsApp support available',
-          'Self check-in with digital key code',
+          'Solar and generator are available for backup',
+          'Secured Environment'
         ].map((item) => (
           <li key={item} className="flex items-start gap-3 text-sm text-white/50">
             <span className="text-[#C9A84C] mt-0.5 text-xs flex-shrink-0">✦</span>
@@ -445,9 +446,11 @@ const galleryImages = [
           </div>
         </div>
 
-        <button className="btn-gold w-full text-center py-5">
-          Proceed with Bank Transfer →
-        </button>
+        <Link href="/login">
+  <button className="btn-gold w-full text-center py-5 cursor-pointer">
+    Proceed with Bank Transfer →
+  </button>
+</Link>
 
         <p className="text-center text-[10px] text-white/25 tracking-wider">
           🔒 Secure Bank Transfer · Manual Confirmation
@@ -596,7 +599,7 @@ const galleryImages = [
     {/* brand */}
     <div className="md:col-span-2">
       <div className="font-playfair text-2xl font-semibold mb-6">
-        Comfort <span className="text-[#C9A84C]">Serene Apartment</span>
+        Comfort <span className="text-[#C9A84C]">Service Apartment</span>
       </div>
       <p className="text-xs text-white/70 leading-relaxed max-w-xs mb-8">
         Premium shortlet living in the heart of Ibadan. Your comfort is our priority

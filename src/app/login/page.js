@@ -79,7 +79,7 @@ export default function LoginPage() {
         {/* logo */}
         <div className="absolute top-10 left-10">
           <Link href="/" className="font-playfair text-xl font-semibold text-white tracking-wide">
-            Comfort <span className="text-[#C9A84C]">Service</span>
+            Comfort <span className="text-[#C9A84C]">Service Apartment</span>
           </Link>
         </div>
 
@@ -118,7 +118,7 @@ export default function LoginPage() {
         {/* mobile logo */}
         <div className="lg:hidden mb-10">
           <Link href="/" className="font-playfair text-xl font-semibold text-white tracking-wide">
-            Comfort <span className="text-[#C9A84C]">Service</span>
+            Comfort <span className="text-[#C9A84C]">Service Apartment</span>
           </Link>
         </div>
 
