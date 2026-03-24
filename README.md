@@ -17,9 +17,9 @@ Comfort Serene is a modern residential property offering **well-designed 2-bedro
 
 ## Tech Stack 
 
-- **Frontend:** Next.js, React  
-- **Backend:** Node.js, Express  
-- **Database:** MySQL / MongoDB (your choice)  
+- **Frontend:** Next.js
+- **Backend:** Node.js, Nextjs
+- **Database:** MongoDB  
 - **Hosting:** Vercel  
 - **Image Storage:** Cloudinary (for property images)  
 
