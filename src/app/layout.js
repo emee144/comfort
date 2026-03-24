@@ -12,8 +12,11 @@ const dmSans = DM_Sans({
 })
 
 export const metadata = {
-  title: 'Comfort Service Apartment | Ibadan',
+  title: 'Comfort Serene Apartment | Ibadan',
   description: 'Premium shortlet apartment in Ibadan, Nigeria',
+  icons: {
+    icon: '/favicon.ico', 
+  },
 }
 
 export default function RootLayout({ children }) {

@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import {
   FaEye, FaEyeSlash, FaEnvelope, FaLock
@@ -96,34 +95,28 @@ export default function SignupPage() {
   return (
     <div className="bg-[#0a0a0a] flex min-h-screen">
 
-     {/* ══ LEFT PANEL ══ */}
-<div className="hidden lg:block lg:w-1/2 h-screen sticky top-0 overflow-hidden">
-
-  {/* this relative div is what Image fill needs */}
-  <div className="relative w-full h-full">
-    <Image
-      src="https://res.cloudinary.com/dwhga1raw/image/upload/v1774100982/SWZ_6383_medvry.jpg"
-      alt="Comfort Service Apartment"
-      fill
-      sizes="50vw"
-      unoptimized
-      style={{ objectFit: 'cover', objectPosition: 'center' }}
-      priority
-    />
-  </div>
-
-  {/* overlays */}
+ {/* ══ LEFT PANEL ══ */}
+<div
+  className="hidden lg:flex lg:w-1/2 h-screen flex-shrink-0 overflow-hidden relative"
+  style={{
+    backgroundImage: `url('https://res.cloudinary.com/dwhga1raw/image/upload/v1774100982/SWZ_6383_medvry.jpg')`,
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    backgroundRepeat: 'no-repeat',
+  }}
+>
+  {/* Overlays */}
   <div className="absolute inset-0 z-10 bg-gradient-to-r from-[#0a0a0a]/20 to-[#0a0a0a]/60" />
   <div className="absolute inset-0 z-10 bg-gradient-to-t from-[#0a0a0a]/95 via-[#0a0a0a]/20 to-transparent" />
 
-  {/* logo */}
+  {/* Logo */}
   <div className="absolute top-10 left-10 z-20">
     <Link href="/" className="font-playfair text-xl text-white tracking-wide">
       Comfort <span className="text-[#C9A84C]">Service</span>
     </Link>
   </div>
 
-  {/* bottom content */}
+  {/* Bottom content */}
   <div className="absolute bottom-12 left-10 right-10 z-20">
     <div className="flex items-center gap-3 mb-5">
       <div className="w-8 h-px bg-[#C9A84C]" />
