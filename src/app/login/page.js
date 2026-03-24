@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { FaEye, FaEyeSlash, FaEnvelope, FaLock } from 'react-icons/fa'
 
@@ -68,49 +69,56 @@ export default function LoginPage() {
     <div className="min-h-screen bg-[#0a0a0a] flex">
 
       {/* ══ LEFT — image panel ══ */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url('https://res.cloudinary.com/dwhga1raw/image/upload/v1774100984/SWZ_6387_vbfwa2.jpg')" }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a]/20 to-[#0a0a0a]/60" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a]/80 via-transparent to-transparent" />
+<div className="hidden lg:flex lg:w-1/2 relative h-screen overflow-hidden">
+  {/* Image */}
+  <Image
+    src="https://res.cloudinary.com/dwhga1raw/image/upload/v1774100984/SWZ_6387_vbfwa2.jpg"
+    alt="Comfort Service Apartment"
+    fill
+    style={{ objectFit: 'cover', objectPosition: 'center' }}
+    unoptimized
+    priority
+  />
 
-        {/* logo */}
-        <div className="absolute top-10 left-10">
-          <Link href="/" className="font-playfair text-xl font-semibold text-white tracking-wide">
-            Comfort <span className="text-[#C9A84C]">Service Apartment</span>
-          </Link>
-        </div>
+  {/* Overlays */}
+  <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a0a]/20 to-[#0a0a0a]/60" />
+  <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a]/80 via-transparent to-transparent" />
 
-        <div className="absolute bottom-12 left-10 right-10">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-8 h-px bg-[#C9A84C]" />
-            <span className="text-[10px] tracking-[0.3em] uppercase text-[#C9A84C] font-semibold">
-              Welcome Back
-            </span>
-          </div>
-          <h2 className="font-playfair text-3xl font-normal text-white leading-snug">
-            Your comfort<br />is waiting in <em className="text-[#C9A84C]">Ibadan</em>
-          </h2>
-          <p className="text-white/40 text-xs mt-3 leading-relaxed tracking-wide">
-            3 Bedrooms · 2 Bathrooms · Swimming Pool · 24/7 Generator
-          </p>
-     
-          <div className="flex gap-8 mt-8">
-            {[
-              { n: '3',    l: 'Bedrooms' },
-              { n: '8+',   l: 'Amenities' },
-              { n: '24/7', l: 'Support' },
-            ].map(s => (
-              <div key={s.l}>
-                <div className="font-playfair text-2xl font-semibold text-[#C9A84C]">{s.n}</div>
-                <div className="text-[9px] tracking-[0.2em] uppercase text-white/40 mt-0.5">{s.l}</div>
-              </div>
-            ))}
-          </div>
+  {/* logo */}
+  <div className="absolute top-10 left-10">
+    <Link href="/" className="font-playfair text-xl font-semibold text-white tracking-wide">
+      Comfort <span className="text-[#C9A84C]">Service Apartment</span>
+    </Link>
+  </div>
+
+  <div className="absolute bottom-12 left-10 right-10">
+    <div className="flex items-center gap-3 mb-4">
+      <div className="w-8 h-px bg-[#C9A84C]" />
+      <span className="text-[10px] tracking-[0.3em] uppercase text-[#C9A84C] font-semibold">
+        Welcome Back
+      </span>
+    </div>
+    <h2 className="font-playfair text-3xl font-normal text-white leading-snug">
+      Your comfort<br />is waiting in <em className="text-[#C9A84C]">Ibadan</em>
+    </h2>
+    <p className="text-white/40 text-xs mt-3 leading-relaxed tracking-wide">
+      3 Bedrooms · 2 Bathrooms · Swimming Pool · 24/7 Generator
+    </p>
+
+    <div className="flex gap-8 mt-8">
+      {[
+        { n: '3',    l: 'Bedrooms' },
+        { n: '8+',   l: 'Amenities' },
+        { n: '24/7', l: 'Support' },
+      ].map(s => (
+        <div key={s.l}>
+          <div className="font-playfair text-2xl font-semibold text-[#C9A84C]">{s.n}</div>
+          <div className="text-[9px] tracking-[0.2em] uppercase text-white/40 mt-0.5">{s.l}</div>
         </div>
-      </div>
+      ))}
+    </div>
+  </div>
+</div>
 
      
       <div className="w-full lg:w-1/2 flex flex-col justify-center px-8 md:px-16 lg:px-20 py-16 overflow-y-auto">
