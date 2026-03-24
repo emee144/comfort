@@ -1,464 +1,429 @@
-'use client'
+"use client";
+import { useState, useEffect, useRef } from "react";
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import Image from 'next/image'
-import Link from 'next/link'
-import {
-  FaWhatsapp, FaCalendarAlt, FaPhone,
-  FaCheckCircle, FaClock, FaTimesCircle,
-  FaSignOutAlt, FaBed, FaBath, FaSwimmingPool, FaBolt
-} from 'react-icons/fa'
+const RATES = { "2-bedroom": 50000, selfcontain: 30000 };
 
-export default function BookingPage() {
-  const router = useRouter()
+const fmt = (d) =>
+  d ? new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "—";
 
-  const [user, setUser]             = useState(null)
-  const [loading, setLoading]       = useState(true)
-  const [bookings, setBookings]     = useState([])
+const nights = (ci, co) => {
+  if (!ci || !co) return 0;
+  return Math.max(0, Math.round((new Date(co) - new Date(ci)) / 86400000));
+};
 
-  // booking form
-  const [checkIn, setCheckIn]       = useState('')
-  const [checkOut, setCheckOut]     = useState('')
-  const [phone, setPhone]           = useState('')
-  const [nights, setNights]         = useState(0)
-  const [totalPrice, setTotalPrice] = useState(null)
-  const [formError, setFormError]   = useState('')
-  const [submitting, setSubmitting] = useState(false)
+const statusPill = (status) => {
+  const map = {
+    awaiting_confirmation: { label: "Awaiting Confirmation", cls: "bg-amber-500/15 text-amber-400 border border-amber-500/30" },
+    confirmed:             { label: "Confirmed ✓",           cls: "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30" },
+    rejected:              { label: "Rejected",              cls: "bg-red-500/15 text-red-400 border border-red-500/30" },
+  };
+  const s = map[status] || { label: status, cls: "bg-white/10 text-white/50" };
+  return (
+    <span className={`text-[10px] tracking-widest uppercase px-3 py-1 rounded-full font-medium ${s.cls}`}>
+      {s.label}
+    </span>
+  );
+};
 
-  // success state
-  const [successBooking, setSuccessBooking] = useState(null)
+// ── Receipt ──────────────────────────────────────────────────────────────────
+function Receipt({ booking, onClose }) {
+  const ref = useRef();
 
-  /* ── check auth ── */
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const res = await fetch('/api/auth/me')
-        if (!res.ok) {
-          router.push('/login')
-          return
-        }
-        const data = await res.json()
-        setUser(data.user)
-      } catch {
-        router.push('/login')
-      } finally {
-        setLoading(false)
-      }
-    }
-    checkAuth()
-  }, [router])
+  const handlePrint = () => {
+    const content = ref.current.innerHTML;
+    const win = window.open("", "_blank");
+    win.document.write(`
+      <html>
+        <head>
+          <title>Booking Receipt — Comfort Serene Apartment</title>
+          <style>
+            @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Lato:wght@300;400&display=swap');
+            * { box-sizing: border-box; margin: 0; padding: 0; }
+            body { font-family: 'Lato', sans-serif; background: #fff; color: #111; padding: 60px; }
+            .receipt { max-width: 680px; margin: 0 auto; }
+            .header { text-align: center; border-bottom: 2px solid #C9A84C; padding-bottom: 24px; margin-bottom: 32px; }
+            .brand { font-family: 'Playfair Display', serif; font-size: 26px; }
+            .gold { color: #C9A84C; }
+            .subtitle { font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: #666; margin-top: 6px; }
+            .badge { display: inline-block; background: #e8f5e9; color: #2e7d32; border: 1px solid #a5d6a7; padding: 4px 14px; border-radius: 20px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em; margin-top: 12px; }
+            .section-title { font-size: 10px; letter-spacing: 0.2em; text-transform: uppercase; color: #999; margin-bottom: 12px; }
+            .row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+            .row:last-child { border: none; }
+            .label { color: #666; }
+            .total-box { background: #fffbf0; border: 1px solid #e8d5a0; border-radius: 8px; padding: 16px; margin-top: 16px; }
+            .footer { text-align: center; font-size: 11px; color: #aaa; margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; }
+          </style>
+        </head>
+        <body>${content}</body>
+      </html>
+    `);
+    win.document.close();
+    win.focus();
+    win.print();
+    win.close();
+  };
 
-  /* ── fetch user bookings ── */
-  useEffect(() => {
-    if (!user) return
-    const fetchBookings = async () => {
-      try {
-        const res = await fetch('/api/auth/bookings')
-        if (res.ok) {
-          const data = await res.json()
-          setBookings(data.bookings || [])
-        }
-      } catch {
-        console.error('Failed to fetch bookings')
-      }
-    }
-    fetchBookings()
-  }, [user])
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+      <div className="bg-[#0f0f0f] border border-white/10 rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto">
+        <div className="p-8 text-white" ref={ref}>
+          <div className="receipt">
+            {/* Header */}
+            <div className="text-center border-b border-[#C9A84C]/40 pb-6 mb-8">
+              <div className="font-playfair text-2xl font-semibold">
+                Comfort <span style={{ color: "#C9A84C" }}>Serene Apartment</span>
+              </div>
+              <div className="text-[10px] tracking-[0.25em] uppercase text-white/40 mt-2">Official Booking Receipt</div>
+              <div className="mt-3">
+                <span className="text-[10px] tracking-widest uppercase px-3 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                  Payment Confirmed ✓
+                </span>
+              </div>
+            </div>
 
-  /* ── price calculator ── */
-  useEffect(() => {
-    if (checkIn && checkOut) {
-      const n = Math.ceil((new Date(checkOut) - new Date(checkIn)) / 86400000)
-      if (n > 0) { setNights(n); setTotalPrice(n * 100000) }
-      else        { setNights(0); setTotalPrice(null) }
-    }
-  }, [checkIn, checkOut])
+            {/* Guest */}
+            <div className="mb-6">
+              <div className="text-[9px] tracking-[0.2em] uppercase text-white/30 mb-3">Guest Information</div>
+              {[
+                ["Name",  booking.name],
+                ["Phone", booking.phone],
+              ].map(([l, v]) => (
+                <div key={l} className="flex justify-between py-2 border-b border-white/5 text-sm">
+                  <span className="text-white/50">{l}</span>
+                  <span className="font-medium">{v}</span>
+                </div>
+              ))}
+            </div>
 
-  /* ── logout ── */
-  const handleLogout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' })
-    router.push('/')
-  }
+            {/* Stay */}
+            <div className="mb-6">
+              <div className="text-[9px] tracking-[0.2em] uppercase text-white/30 mb-3">Stay Details</div>
+              {[
+                ["Room Type", booking.roomType === "2-bedroom" ? "2 Bedroom" : "Self Contain"],
+                ["Check-in",  fmt(booking.checkIn)],
+                ["Check-out", fmt(booking.checkOut)],
+                ["Guests",    booking.guests],
+                ["Duration",  `${nights(booking.checkIn, booking.checkOut)} night(s)`],
+              ].map(([l, v]) => (
+                <div key={l} className="flex justify-between py-2 border-b border-white/5 text-sm">
+                  <span className="text-white/50">{l}</span>
+                  <span className="font-medium">{v}</span>
+                </div>
+              ))}
+            </div>
 
-  /* ── handle payment ── */
-  const handlePayment = async () => {
-    setFormError('')
+            {/* Amount */}
+            <div className="bg-[#C9A84C]/5 border border-[#C9A84C]/20 rounded-xl p-4">
+              <div className="flex justify-between items-center">
+                <span className="text-white/60 text-sm">Total Amount Paid</span>
+                <span className="text-[#C9A84C] text-xl font-semibold">₦{Number(booking.amount).toLocaleString()}</span>
+              </div>
+              {booking.transferReference && (
+                <div className="mt-2 text-[11px] text-white/30">
+                  Transfer Ref: <span className="text-white/50 font-medium">{booking.transferReference}</span>
+                </div>
+              )}
+            </div>
 
-    if (!checkIn || !checkOut) return setFormError('Please select check-in and check-out dates')
-    if (!phone)                 return setFormError('Please enter your phone number')
-    if (nights <= 0)            return setFormError('Check-out must be after check-in')
+            <div className="text-center text-[10px] text-white/20 mt-6 border-t border-white/5 pt-4">
+              Receipt generated on {new Date().toLocaleString()} · Comfort Serene Apartment
+            </div>
+          </div>
+        </div>
 
-    // check if dates are already booked
-    const isBooked = bookings.some(b => {
-      if (b.status === 'cancelled') return false
-      const bIn  = new Date(b.checkIn)
-      const bOut = new Date(b.checkOut)
-      const cIn  = new Date(checkIn)
-      const cOut = new Date(checkOut)
-      return cIn < bOut && cOut > bIn
-    })
-
-    if (isBooked) return setFormError('These dates are already booked. Please choose different dates.')
-
-    setSubmitting(true)
-
-    try {
-      // initialize Paystack payment
-      const res = await fetch('/api/payment/initialize', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ checkIn, checkOut, phone, amount: totalPrice }),
-      })
-
-      const data = await res.json()
-
-      if (!res.ok) {
-        setFormError(data.message || 'Payment initialization failed')
-        setSubmitting(false)
-        return
-      }
-
-      // open Paystack popup
-      const handler = window.PaystackPop.setup({
-        key: process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY,
-        email: user.email,
-        amount: totalPrice * 100, // kobo
-        currency: 'NGN',
-        ref: data.reference,
-        onClose: () => setSubmitting(false),
-        callback: async (response) => {
-          // verify payment
-          const verifyRes = await fetch('/api/payment/verify', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              reference: response.reference,
-              checkIn,
-              checkOut,
-              phone,
-              amount: totalPrice,
-            }),
-          })
-
-          const verifyData = await verifyRes.json()
-
-          if (verifyRes.ok) {
-            setSuccessBooking(verifyData.booking)
-            setBookings(prev => [verifyData.booking, ...prev])
-            setCheckIn('')
-            setCheckOut('')
-            setPhone('')
-            setNights(0)
-            setTotalPrice(null)
-            // scroll to top
-            window.scrollTo({ top: 0, behavior: 'smooth' })
-          } else {
-            setFormError(verifyData.message || 'Payment verification failed')
-          }
-
-          setSubmitting(false)
-        },
-      })
-
-      handler.openIframe()
-
-    } catch {
-      setFormError('Something went wrong. Please try again.')
-      setSubmitting(false)
-    }
-  }
-
-  const statusIcon = (status) => {
-    if (status === 'confirmed') return <FaCheckCircle className="text-green-400" />
-    if (status === 'pending')   return <FaClock className="text-yellow-400" />
-    return                             <FaTimesCircle className="text-red-400" />
-  }
-
-  const statusColor = (status) => {
-    if (status === 'confirmed') return 'text-green-400 bg-green-400/10 border-green-400/20'
-    if (status === 'pending')   return 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20'
-    return                             'text-red-400 bg-red-400/10 border-red-400/20'
-  }
-
-  const formatDate = (date) => new Date(date).toLocaleDateString('en-NG', {
-    day: 'numeric', month: 'short', year: 'numeric'
-  })
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-          <svg className="animate-spin h-8 w-8 text-[#C9A84C]" viewBox="0 0 24 24" fill="none">
-            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
-          </svg>
-          <span className="text-white/40 text-xs tracking-widest uppercase">Loading...</span>
+        <div className="flex gap-3 p-6 pt-0">
+          <button onClick={handlePrint}
+            className="flex-1 bg-[#C9A84C] hover:bg-[#b8943e] text-black text-[11px] tracking-widest uppercase font-semibold py-3 rounded-xl transition-colors">
+            Print Receipt
+          </button>
+          <button onClick={onClose}
+            className="px-6 border border-white/10 hover:border-white/20 text-white/60 text-[11px] tracking-widest uppercase rounded-xl transition-colors">
+            Close
+          </button>
         </div>
       </div>
-    )
-  }
+    </div>
+  );
+}
+
+// ── Booking Form ──────────────────────────────────────────────────────────────
+function BookingForm({ onBooked }) {
+  const [step, setStep] = useState(1);
+  const [form, setForm] = useState({
+    name: "", phone: "", roomType: "", checkIn: "", checkOut: "", guests: 1, transferReference: "",
+  });
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const set = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }));
+
+  const n = nights(form.checkIn, form.checkOut);
+  const rate = RATES[form.roomType] || 0;
+  const amount = n * rate;
+
+  const submitBooking = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch("/api/auth/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...form, amount }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed");
+      setStep(3);
+      onBooked?.();
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const inputCls = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#C9A84C]/60 transition-colors";
+  const labelCls = "block text-[10px] tracking-[0.15em] uppercase text-white/40 mb-2";
+
+  return (
+    <div className="bg-[#0f0f0f] border border-white/8 rounded-2xl p-8">
+      <h2 className="font-playfair text-xl font-semibold mb-1">
+        New <span className="text-[#C9A84C]">Booking</span>
+      </h2>
+      <p className="text-white/30 text-xs tracking-wide mb-8">Complete the form below to reserve your stay</p>
+
+      {/* Steps */}
+      <div className="flex items-center gap-3 mb-8">
+        {["Your Details", "Bank Transfer", "Submitted"].map((s, i) => (
+          <div key={s} className="flex items-center gap-2">
+            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all
+              ${step > i + 1 ? "bg-[#C9A84C] text-black" : step === i + 1 ? "bg-[#C9A84C]/20 border border-[#C9A84C] text-[#C9A84C]" : "bg-white/5 border border-white/10 text-white/20"}`}>
+              {step > i + 1 ? "✓" : i + 1}
+            </div>
+            <span className={`text-[10px] tracking-wide uppercase ${step === i + 1 ? "text-white/70" : "text-white/20"}`}>{s}</span>
+            {i < 2 && <div className={`h-px w-8 ${step > i + 1 ? "bg-[#C9A84C]/40" : "bg-white/10"}`} />}
+          </div>
+        ))}
+      </div>
+
+      {/* Step 1 */}
+      {step === 1 && (
+        <div className="space-y-5">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+              <label className={labelCls}>Full Name</label>
+              <input className={inputCls} placeholder="John Doe" value={form.name} onChange={set("name")} />
+            </div>
+            <div>
+              <label className={labelCls}>Phone Number</label>
+              <input className={inputCls} placeholder="+234 800 000 0000" value={form.phone} onChange={set("phone")} />
+            </div>
+            <div>
+              <label className={labelCls}>Room Type</label>
+              <select className={inputCls} value={form.roomType} onChange={set("roomType")}>
+                <option value="" disabled>Select a room</option>
+                <option value="2-bedroom">2 Bedroom — ₦{RATES["2-bedroom"].toLocaleString()}/night</option>
+                <option value="selfcontain">Self Contain — ₦{RATES["selfcontain"].toLocaleString()}/night</option>
+              </select>
+            </div>
+            <div>
+              <label className={labelCls}>No. of Guests</label>
+              <input className={inputCls} type="number" min={1} max={10} value={form.guests} onChange={set("guests")} />
+            </div>
+            <div>
+              <label className={labelCls}>Check-in Date</label>
+              <input className={inputCls} type="date" value={form.checkIn} onChange={set("checkIn")} />
+            </div>
+            <div>
+              <label className={labelCls}>Check-out Date</label>
+              <input className={inputCls} type="date" value={form.checkOut} onChange={set("checkOut")} />
+            </div>
+          </div>
+
+          {amount > 0 && (
+            <div className="bg-[#C9A84C]/5 border border-[#C9A84C]/20 rounded-xl p-4 flex justify-between items-center">
+              <div>
+                <div className="text-[10px] uppercase tracking-widest text-white/30">Total Amount</div>
+                <div className="text-[#C9A84C] text-lg font-semibold mt-1">₦{amount.toLocaleString()}</div>
+              </div>
+              <div className="text-right text-xs text-white/30">
+                {n} night(s) × ₦{rate.toLocaleString()}
+              </div>
+            </div>
+          )}
+
+          <button
+            onClick={() => {
+              if (!form.name || !form.phone || !form.roomType || !form.checkIn || !form.checkOut)
+                return setError("Please fill all fields.");
+              if (amount <= 0) return setError("Select valid check-in and check-out dates.");
+              setError("");
+              setStep(2);
+            }}
+            className="w-full bg-[#C9A84C] hover:bg-[#b8943e] text-black text-[11px] tracking-widest uppercase font-bold py-4 rounded-xl transition-colors mt-2">
+            Continue to Payment →
+          </button>
+          {error && <p className="text-red-400 text-xs text-center mt-2">{error}</p>}
+        </div>
+      )}
+
+      {/* Step 2 */}
+      {step === 2 && (
+        <div className="space-y-6">
+          <div className="bg-[#C9A84C]/5 border border-[#C9A84C]/30 rounded-2xl p-6">
+            <div className="text-[9px] tracking-[0.25em] uppercase text-[#C9A84C]/60 mb-4">Transfer Details</div>
+            <div className="space-y-3">
+              {[
+                ["Bank",           "First Bank"],
+                ["Account Name",   "Comfort Serene Apartment"],
+                ["Account Number", "5326761655"],
+                ["Amount",         `₦${amount.toLocaleString()}`],
+              ].map(([l, v]) => (
+                <div key={l} className="flex justify-between text-sm">
+                  <span className="text-white/40">{l}</span>
+                  <span className={`font-semibold ${l === "Amount" ? "text-[#C9A84C]" : "text-white"}`}>{v}</span>
+                </div>
+              ))}
+            </div>
+            <p className="mt-4 pt-4 border-t border-white/5 text-[11px] text-white/30 leading-relaxed">
+              Transfer the exact amount above, then enter your transaction reference below and click{" "}
+              <span className="text-white/50">"I Have Made Transfer"</span>.
+            </p>
+          </div>
+
+          {error && <p className="text-red-400 text-xs text-center">{error}</p>}
+
+          <div className="flex gap-3">
+            <button onClick={() => setStep(1)}
+              className="px-6 border border-white/10 hover:border-white/20 text-white/50 text-[11px] tracking-widest uppercase rounded-xl py-4 transition-colors">
+              ← Back
+            </button>
+            <button onClick={submitBooking} disabled={loading}
+              className="flex-1 bg-[#C9A84C] hover:bg-[#b8943e] disabled:opacity-50 text-black text-[11px] tracking-widest uppercase font-bold py-4 rounded-xl transition-colors">
+              {loading ? "Submitting…" : "I Have Made Transfer ✓"}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Step 3 */}
+      {step === 3 && (
+        <div className="text-center py-8">
+          <div className="w-16 h-16 bg-[#C9A84C]/10 border border-[#C9A84C]/30 rounded-full flex items-center justify-center text-2xl mx-auto mb-5">
+            ⏳
+          </div>
+          <h3 className="font-playfair text-lg font-semibold mb-2">Booking Submitted!</h3>
+          <p className="text-white/40 text-sm leading-relaxed max-w-xs mx-auto">
+            Your booking is awaiting payment confirmation. You'll be able to print your receipt once the admin confirms your transfer.
+          </p>
+          <button onClick={() => setStep(1)}
+            className="mt-6 border border-white/10 hover:border-[#C9A84C]/30 text-white/50 hover:text-white/70 text-[10px] tracking-widest uppercase px-6 py-3 rounded-xl transition-colors">
+            Make Another Booking
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── Main Dashboard ────────────────────────────────────────────────────────────
+export default function DashboardPage() {
+  const [bookings, setBookings] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("bookings");
+  const [receipt, setReceipt] = useState(null);
+
+  const fetchBookings = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/auth/bookings");
+      const data = await res.json();
+      setBookings(data.bookings || []);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => { fetchBookings(); }, []);
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white">
-
-      {/* Paystack script */}
-      <script src="https://js.paystack.co/v1/inline.js" async />
-
-      {/* ══════════ NAVBAR ══════════ */}
-      <nav className="sticky top-0 z-50 flex justify-between items-center px-6 md:px-16 py-4 bg-[#0a0a0a]/95 backdrop-blur-md border-b border-white/5">
-        <Link href="/" className="font-playfair text-xl font-semibold tracking-wide">
-          Comfort <span className="text-[#C9A84C]">Service</span>
-        </Link>
-        <div className="flex items-center gap-4">
-          <span className="text-xs text-white/40 hidden md:block">{user?.email}</span>
-          <button onClick={handleLogout}
-            className="flex items-center gap-2 text-xs text-white/40 hover:text-red-400 transition-colors border border-white/10 hover:border-red-400/30 px-4 py-2 rounded-lg">
-            <FaSignOutAlt />
-            <span className="hidden md:block">Logout</span>
-          </button>
+      {/* Header */}
+      <div className="border-b border-white/5 px-8 md:px-16 py-5 flex items-center justify-between">
+        <div>
+          <h1 className="font-playfair text-lg font-semibold">
+            My <span className="text-[#C9A84C]">Dashboard</span>
+          </h1>
+          <p className="text-white/30 text-[11px] tracking-wide mt-0.5">Manage your bookings and reservations</p>
         </div>
-      </nav>
+        <div className="flex gap-2">
+          {["bookings", "new"].map((t) => (
+            <button key={t} onClick={() => setActiveTab(t)}
+              className={`text-[10px] tracking-widest uppercase px-4 py-2 rounded-lg transition-colors
+                ${activeTab === t ? "bg-[#C9A84C]/15 text-[#C9A84C] border border-[#C9A84C]/30" : "text-white/30 hover:text-white/50 border border-transparent"}`}>
+              {t === "new" ? "+ New Booking" : "My Bookings"}
+            </button>
+          ))}
+        </div>
+      </div>
 
-      <div className="max-w-6xl mx-auto px-6 md:px-16 py-12">
-
-        {/* ══════════ SUCCESS BANNER ══════════ */}
-        {successBooking && (
-          <div className="bg-green-500/10 border border-green-500/25 rounded-xl p-6 mb-10 flex items-start gap-4">
-            <FaCheckCircle className="text-green-400 text-2xl flex-shrink-0 mt-0.5" />
-            <div>
-              <h3 className="text-green-400 font-semibold mb-1">Booking Confirmed!</h3>
-              <p className="text-white/50 text-sm">
-                Your booking from <span className="text-white">{formatDate(successBooking.checkIn)}</span> to{' '}
-                <span className="text-white">{formatDate(successBooking.checkOut)}</span> has been confirmed.
-                A confirmation has been sent to <span className="text-white">{user?.email}</span>.
-              </p>
-              <button onClick={() => setSuccessBooking(null)}
-                className="text-[10px] text-white/30 hover:text-white/50 mt-2 tracking-wider uppercase transition-colors">
-                Dismiss
-              </button>
-            </div>
-          </div>
+      <div className="px-8 md:px-16 py-10 max-w-5xl mx-auto">
+        {activeTab === "new" && (
+          <BookingForm onBooked={() => { fetchBookings(); setActiveTab("bookings"); }} />
         )}
 
-        <div className="grid lg:grid-cols-2 gap-12">
-
-          {/* ══════════ LEFT — NEW BOOKING ══════════ */}
+        {activeTab === "bookings" && (
           <div>
-            {/* apartment summary card */}
-            <div className="relative h-52 rounded-xl overflow-hidden mb-8">
-              <Image
-                src="https://res.cloudinary.com/dwhga1raw/image/upload/v1774100984/SWZ_6387_vbfwa2.jpg"
-                alt="Comfort Service Apartment"
-                fill
-                sizes="(max-width: 768px) 100vw, 50vw"
-                unoptimized
-                style={{ objectFit: 'cover' }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a]/90 via-[#0a0a0a]/30 to-transparent" />
-              <div className="absolute bottom-5 left-5 right-5">
-                <h2 className="font-playfair text-2xl font-normal mb-2">
-                  Comfort Service Apartment
-                </h2>
-                <div className="flex flex-wrap gap-4 text-xs text-white/60">
-                  <span className="flex items-center gap-1.5"><FaBed className="text-[#C9A84C]" /> 3 Bedrooms</span>
-                  <span className="flex items-center gap-1.5"><FaBath className="text-[#C9A84C]" /> 2 Bathrooms</span>
-                  <span className="flex items-center gap-1.5"><FaSwimmingPool className="text-[#C9A84C]" /> Pool</span>
-                  <span className="flex items-center gap-1.5"><FaBolt className="text-[#C9A84C]" /> Generator</span>
-                </div>
-              </div>
-            </div>
-
-            {/* booking form */}
-            <div className="bg-[#0f0f0f] border border-white/8 rounded-xl p-8 relative">
-              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#C9A84C] to-transparent rounded-t-xl" />
-
-              <div className="flex items-center gap-3 mb-8">
-                <div className="w-6 h-px bg-[#C9A84C]" />
-                <span className="text-[10px] tracking-[0.3em] uppercase text-[#C9A84C] font-semibold">
-                  New Booking
-                </span>
-              </div>
-
-              {formError && (
-                <div className="bg-red-500/10 border border-red-500/25 text-red-400 text-xs px-4 py-3 rounded-lg mb-6 flex items-center gap-2">
-                  <span>⚠</span> {formError}
-                </div>
-              )}
-
-              <div className="space-y-5">
-
-                {/* dates */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-[10px] tracking-[0.2em] uppercase text-white/30 mb-2.5">
-                      Check-In
-                    </label>
-                    <div className="relative">
-                      <FaCalendarAlt className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 text-sm" />
-                      <input
-                        type="date"
-                        value={checkIn}
-                        min={new Date().toISOString().split('T')[0]}
-                        onChange={e => { setCheckIn(e.target.value); setFormError('') }}
-                        className="w-full bg-[#0a0a0a] border border-white/10 pl-11 pr-4 py-4 text-sm text-white/70 outline-none focus:border-[#C9A84C]/50 transition-colors rounded-lg"
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <label className="block text-[10px] tracking-[0.2em] uppercase text-white/30 mb-2.5">
-                      Check-Out
-                    </label>
-                    <div className="relative">
-                      <FaCalendarAlt className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 text-sm" />
-                      <input
-                        type="date"
-                        value={checkOut}
-                        min={checkIn || new Date().toISOString().split('T')[0]}
-                        onChange={e => { setCheckOut(e.target.value); setFormError('') }}
-                        className="w-full bg-[#0a0a0a] border border-white/10 pl-11 pr-4 py-4 text-sm text-white/70 outline-none focus:border-[#C9A84C]/50 transition-colors rounded-lg"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* phone */}
-                <div>
-                  <label className="block text-[10px] tracking-[0.2em] uppercase text-white/30 mb-2.5">
-                    Phone Number
-                  </label>
-                  <div className="relative">
-                    <FaPhone className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 text-sm" />
-                    <input
-                      type="tel"
-                      value={phone}
-                      onChange={e => { setPhone(e.target.value); setFormError('') }}
-                      placeholder="+234 800 000 0000"
-                      className="w-full bg-[#0a0a0a] border border-white/10 pl-11 pr-4 py-4 text-sm text-white placeholder-white/15 outline-none focus:border-[#C9A84C]/50 transition-colors rounded-lg"
-                    />
-                  </div>
-                </div>
-
-                {/* price breakdown */}
-                {nights > 0 && (
-                  <div className="bg-[#0a0a0a] border border-white/8 rounded-lg p-5 space-y-3">
-                    <div className="flex justify-between text-sm text-white/50">
-                      <span>₦100,000 × {nights} night{nights > 1 ? 's' : ''}</span>
-                      <span>₦{(100000 * nights).toLocaleString()}</span>
-                    </div>
-                    <div className="flex justify-between text-sm text-white/50">
-                      <span>Paystack fee</span>
-                      <span>₦{Math.min(Math.round(totalPrice * 0.015) + 100, 2000).toLocaleString()}</span>
-                    </div>
-                    <div className="h-px bg-white/8" />
-                    <div className="flex justify-between items-center">
-                      <span className="text-[10px] tracking-[0.2em] uppercase text-white/40">Total</span>
-                      <span className="font-playfair text-3xl font-semibold text-[#C9A84C]">
-                        ₦{totalPrice?.toLocaleString()}
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                {/* submit */}
-                <button
-                  onClick={handlePayment}
-                  disabled={submitting}
-                  className="btn-gold w-full py-4 rounded-lg disabled:opacity-40 disabled:cursor-not-allowed">
-                  {submitting ? (
-                    <span className="flex items-center justify-center gap-2">
-                      <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"/>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
-                      </svg>
-                      Processing...
-                    </span>
-                  ) : 'Proceed to Payment →'}
+            {loading ? (
+              <div className="text-center py-20 text-white/20 text-sm tracking-widest uppercase">Loading…</div>
+            ) : bookings.length === 0 ? (
+              <div className="text-center py-20">
+                <div className="text-4xl mb-4">🏠</div>
+                <p className="text-white/30 text-sm">No bookings yet.</p>
+                <button onClick={() => setActiveTab("new")}
+                  className="mt-4 text-[#C9A84C] text-[10px] tracking-widest uppercase hover:underline">
+                  Make your first booking →
                 </button>
-
-                <p className="text-center text-[10px] text-white/20 tracking-wider">
-                  🔒 Secured by Paystack · SSL Encrypted
-                </p>
-
-              </div>
-            </div>
-          </div>
-
-          {/* ══════════ RIGHT — MY BOOKINGS ══════════ */}
-          <div>
-            <div className="flex items-center gap-3 mb-8">
-              <div className="w-6 h-px bg-[#C9A84C]" />
-              <span className="text-[10px] tracking-[0.3em] uppercase text-[#C9A84C] font-semibold">
-                My Bookings
-              </span>
-            </div>
-
-            {bookings.length === 0 ? (
-              <div className="bg-[#0f0f0f] border border-white/8 rounded-xl p-12 text-center">
-                <FaCalendarAlt className="text-white/10 text-5xl mx-auto mb-4" />
-                <p className="text-white/30 text-sm mb-2">No bookings yet</p>
-                <p className="text-white/20 text-xs">Your bookings will appear here after payment</p>
               </div>
             ) : (
               <div className="space-y-4">
-                {bookings.map((b, i) => (
-                  <div key={i}
-                    className="bg-[#0f0f0f] border border-white/8 rounded-xl p-6 hover:border-[#C9A84C]/20 transition-all">
-
-                    {/* status badge */}
-                    <div className="flex justify-between items-start mb-4">
-                      <div className={`flex items-center gap-2 text-xs px-3 py-1 rounded-full border ${statusColor(b.status)}`}>
-                        {statusIcon(b.status)}
-                        <span className="capitalize font-medium">{b.status}</span>
+                {bookings.map((b) => (
+                  <div key={b._id} className="bg-[#0f0f0f] border border-white/8 rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-3">
+                        <span className="text-sm font-medium text-white/80">{b.name}</span>
+                        {statusPill(b.status)}
                       </div>
-                      <span className="text-[10px] text-white/20 tracking-wider">
-                        #{b._id?.toString().slice(-6).toUpperCase()}
-                      </span>
+                      <div className="text-white/30 text-xs">
+                        {b.roomType === "2-bedroom" ? "2 Bedroom" : "Self Contain"} · {fmt(b.checkIn)} → {fmt(b.checkOut)} · {nights(b.checkIn, b.checkOut)} night(s) · {b.guests} guest(s)
+                      </div>
+                      <div className="text-[#C9A84C] text-sm font-semibold">₦{Number(b.amount).toLocaleString()}</div>
                     </div>
 
-                    {/* dates */}
-                    <div className="grid grid-cols-2 gap-4 mb-4">
-                      <div>
-                        <div className="text-[10px] tracking-[0.2em] uppercase text-white/25 mb-1">Check-In</div>
-                        <div className="text-sm font-medium text-white/80">{formatDate(b.checkIn)}</div>
-                      </div>
-                      <div>
-                        <div className="text-[10px] tracking-[0.2em] uppercase text-white/25 mb-1">Check-Out</div>
-                        <div className="text-sm font-medium text-white/80">{formatDate(b.checkOut)}</div>
-                      </div>
+                    <div className="flex gap-2 items-center">
+                      {b.status === "confirmed" && (
+                        <button onClick={() => setReceipt(b)}
+                          className="bg-[#C9A84C] hover:bg-[#b8943e] text-black text-[10px] tracking-widest uppercase font-bold px-5 py-2.5 rounded-xl transition-colors">
+                          Print Receipt
+                        </button>
+                      )}
+                      {b.status === "awaiting_confirmation" && (
+                        <span className="text-[10px] text-white/20 italic">Awaiting admin confirmation…</span>
+                      )}
+                      {b.status === "rejected" && (
+                        <span className="text-[10px] text-red-400/60 italic">Contact support for assistance.</span>
+                      )}
                     </div>
-
-                    {/* nights + amount */}
-                    <div className="flex justify-between items-center pt-4 border-t border-white/5">
-                      <span className="text-xs text-white/30">
-                        {Math.ceil((new Date(b.checkOut) - new Date(b.checkIn)) / 86400000)} night{Math.ceil((new Date(b.checkOut) - new Date(b.checkIn)) / 86400000) > 1 ? 's' : ''}
-                      </span>
-                      <span className="font-playfair text-xl font-semibold text-[#C9A84C]">
-                        ₦{b.amount?.toLocaleString()}
-                      </span>
-                    </div>
-
                   </div>
                 ))}
               </div>
             )}
-
-            {/* need help */}
-            <div className="mt-6 border border-white/8 rounded-xl p-5 flex items-center justify-between">
-              <div>
-                <div className="text-sm font-medium text-white/70 mb-1">Need help?</div>
-                <div className="text-xs text-white/30">Contact us on WhatsApp</div>
-              </div>
-              <a href="https://wa.me/2348000000000" target="_blank" rel="noreferrer"
-                className="flex items-center gap-2 bg-[#25D366]/10 border border-[#25D366]/20 text-[#25D366] text-xs px-4 py-2.5 rounded-lg hover:bg-[#25D366]/20 transition-colors">
-                <FaWhatsapp />
-                <span>Chat</span>
-              </a>
-            </div>
-
           </div>
-        </div>
+        )}
       </div>
+
+      {receipt && <Receipt booking={receipt} onClose={() => setReceipt(null)} />}
     </div>
-  )
+  );
 }

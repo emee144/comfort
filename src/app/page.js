@@ -104,7 +104,7 @@ const galleryImages = [
           ))}
         </ul>
 
-        <a href="/login" className="btn-gold text-[10px] px-4 py-2.5">
+        <a href="/login" className="btn-gold text-[10px] px-2 py-2.5 ml-8">
           Book Now
         </a>
       </nav>
@@ -114,7 +114,7 @@ const galleryImages = [
         <div className="absolute inset-0">
   <Image
     src="https://res.cloudinary.com/dwhga1raw/image/upload/v1774100984/SWZ_6387_vbfwa2.jpg"
-    alt="Comfort Service Apartment"
+    alt="Comfort Serene Apartment"
     fill
     style={{ objectFit: 'cover' }}
     priority
@@ -188,13 +188,13 @@ const galleryImages = [
               both business and leisure travellers.
             </p>
             <p className="text-white/50 leading-relaxed mb-10 text-sm">
-              Our fully-furnished 3-bedroom apartment provides everything you need for a comfortable,
+              Our fully-furnished 2-bedroom, self-contained apartments provides everything you need for a comfortable,
               memorable stay — all at an unbeatable nightly rate.
             </p>
             <div className="grid grid-cols-2 gap-6">
               {[
-                { n: '3',    l: 'Bedrooms' },
-                { n: '2+2',  l: 'Baths & Toilets' },
+                { n: '2',    l: 'Bedrooms' },
+                { n: '3+3',  l: 'Baths & Toilets' },
                 { n: '8+',   l: 'Amenities' },
                 { n: '24/7', l: 'Support' },
               ].map(s => (
@@ -500,7 +500,7 @@ const galleryImages = [
     {/* brand */}
     <div className="md:col-span-2">
       <div className="font-playfair text-2xl font-semibold mb-6">
-        Comfort <span className="text-[#C9A84C]">Service</span>
+        Comfort <span className="text-[#C9A84C]">Serene Apartment</span>
       </div>
       <p className="text-xs text-white/30 leading-relaxed max-w-xs mb-8">
         Premium shortlet living in the heart of Ibadan. Your comfort is our priority
@@ -550,7 +550,7 @@ const galleryImages = [
     {[
       { icon: <FaPhone className="text-[#C9A84C]" />,        text: '+2349135415924' },
       { icon: <FaWhatsapp className="text-[#C9A84C]" />,     text: '+2349135415924' },
-      { icon: <FaEnvelope className="text-[#C9A84C]" />,     text: 'info@comfortservice.com' },
+      { icon: <FaEnvelope className="text-[#C9A84C]" />,     text: 'info@comfortserene.com' },
       { icon: <FaMapMarkerAlt className="text-[#C9A84C]" />, text: 'Ibadan, Oyo State' },
     ].map((c, i) => (
       <div key={i} className="flex items-start gap-3 text-xs text-white/30 hover:text-white/50 transition-colors cursor-default">
