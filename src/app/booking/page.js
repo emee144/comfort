@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 
-const RATES = { "2-bedroom": 50000, selfcontain: 30000 };
+const RATES = { "2-bedroom": 100000, selfcontain: 70000 };
 
 const fmt = (d) =>
   d ? new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "—";
@@ -9,6 +9,25 @@ const fmt = (d) =>
 const nights = (ci, co) => {
   if (!ci || !co) return 0;
   return Math.max(0, Math.round((new Date(co) - new Date(ci)) / 86400000));
+};
+
+const isDateRangeUnavailable = (checkIn, checkOut, roomType, bookedDates) => {
+  if (!checkIn || !checkOut || !roomType) return false;
+  const newStart = new Date(checkIn);
+  const newEnd = new Date(checkOut);
+
+  return bookedDates.some(({ checkIn: bIn, checkOut: bOut, roomType: bRoom }) => {
+    if (bRoom !== roomType) return false;
+    const bStart = new Date(bIn);
+    const bEnd = new Date(bOut);
+    return newStart < bEnd && newEnd > bStart;
+  });
+};
+
+const getBookedDateRanges = (bookedDates, roomType) => {
+  return bookedDates
+    .filter((b) => b.roomType === roomType && b.status !== "rejected")
+    .map((b) => ({ start: b.checkIn, end: b.checkOut }));
 };
 
 const statusPill = (status) => {
@@ -25,7 +44,6 @@ const statusPill = (status) => {
   );
 };
 
-// ── Receipt ──────────────────────────────────────────────────────────────────
 function Receipt({ booking, onClose }) {
   const ref = useRef();
 
@@ -68,7 +86,6 @@ function Receipt({ booking, onClose }) {
       <div className="bg-[#0f0f0f] border border-white/10 rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto">
         <div className="p-8 text-white" ref={ref}>
           <div className="receipt">
-            {/* Header */}
             <div className="text-center border-b border-[#C9A84C]/40 pb-6 mb-8">
               <div className="font-playfair text-2xl font-semibold">
                 Comfort <span style={{ color: "#C9A84C" }}>Serene Apartment</span>
@@ -81,7 +98,6 @@ function Receipt({ booking, onClose }) {
               </div>
             </div>
 
-            {/* Guest */}
             <div className="mb-6">
               <div className="text-[9px] tracking-[0.2em] uppercase text-white/30 mb-3">Guest Information</div>
               {[
@@ -90,12 +106,11 @@ function Receipt({ booking, onClose }) {
               ].map(([l, v]) => (
                 <div key={l} className="flex justify-between py-2 border-b border-white/5 text-sm">
                   <span className="text-white/50">{l}</span>
-                  <span className="font-medium">{v}</span>
+                  <span className="font-medium text-white">{v}</span>
                 </div>
               ))}
             </div>
 
-            {/* Stay */}
             <div className="mb-6">
               <div className="text-[9px] tracking-[0.2em] uppercase text-white/30 mb-3">Stay Details</div>
               {[
@@ -107,12 +122,11 @@ function Receipt({ booking, onClose }) {
               ].map(([l, v]) => (
                 <div key={l} className="flex justify-between py-2 border-b border-white/5 text-sm">
                   <span className="text-white/50">{l}</span>
-                  <span className="font-medium">{v}</span>
+                  <span className="font-medium text-white">{v}</span>
                 </div>
               ))}
             </div>
 
-            {/* Amount */}
             <div className="bg-[#C9A84C]/5 border border-[#C9A84C]/20 rounded-xl p-4">
               <div className="flex justify-between items-center">
                 <span className="text-white/60 text-sm">Total Amount Paid</span>
@@ -146,22 +160,42 @@ function Receipt({ booking, onClose }) {
   );
 }
 
-// ── Booking Form ──────────────────────────────────────────────────────────────
-function BookingForm({ onBooked }) {
+function BookingForm({ onBooked, allBookings }) {
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({
     name: "", phone: "", roomType: "", checkIn: "", checkOut: "", guests: 1, transferReference: "",
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [availabilityError, setAvailabilityError] = useState("");
 
-  const set = (k) => (e) => setForm((p) => ({ ...p, [k]: e.target.value }));
+  const set = (k) => (e) => {
+    setForm((p) => ({ ...p, [k]: e.target.value }));
+    setAvailabilityError("");
+  };
 
   const n = nights(form.checkIn, form.checkOut);
   const rate = RATES[form.roomType] || 0;
   const amount = n * rate;
 
+  const today = new Date().toISOString().split("T")[0];
+
+  const checkAvailability = () => {
+    if (!form.checkIn || !form.checkOut || !form.roomType) return true;
+    const conflicts = isDateRangeUnavailable(form.checkIn, form.checkOut, form.roomType, allBookings);
+    if (conflicts) {
+      const room = form.roomType === "2-bedroom" ? "2 Bedroom" : "Self Contain";
+      setAvailabilityError(
+        `The ${room} is already booked for some or all of the selected dates. Please choose different dates.`
+      );
+      return false;
+    }
+    setAvailabilityError("");
+    return true;
+  };
+
   const submitBooking = async () => {
+    if (!checkAvailability()) return;
     setLoading(true);
     setError("");
     try {
@@ -181,17 +215,20 @@ function BookingForm({ onBooked }) {
     }
   };
 
-  const inputCls = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/20 focus:outline-none focus:border-[#C9A84C]/60 transition-colors";
-  const labelCls = "block text-[10px] tracking-[0.15em] uppercase text-white/40 mb-2";
+  const inputCls = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#C9A84C]/60 transition-colors";
+  const labelCls = "block text-[10px] tracking-[0.15em] uppercase text-white/50 mb-2";
+
+  const bookedRangesForRoom = form.roomType
+    ? getBookedDateRanges(allBookings, form.roomType)
+    : [];
 
   return (
     <div className="bg-[#0f0f0f] border border-white/8 rounded-2xl p-8">
-      <h2 className="font-playfair text-xl font-semibold mb-1">
+      <h2 className="font-playfair text-xl font-semibold text-white mb-1">
         New <span className="text-[#C9A84C]">Booking</span>
       </h2>
-      <p className="text-white/30 text-xs tracking-wide mb-8">Complete the form below to reserve your stay</p>
+      <p className="text-white/40 text-xs tracking-wide mb-8">Complete the form below to reserve your stay</p>
 
-      {/* Steps */}
       <div className="flex items-center gap-3 mb-8">
         {["Your Details", "Bank Transfer", "Submitted"].map((s, i) => (
           <div key={s} className="flex items-center gap-2">
@@ -199,13 +236,12 @@ function BookingForm({ onBooked }) {
               ${step > i + 1 ? "bg-[#C9A84C] text-black" : step === i + 1 ? "bg-[#C9A84C]/20 border border-[#C9A84C] text-[#C9A84C]" : "bg-white/5 border border-white/10 text-white/20"}`}>
               {step > i + 1 ? "✓" : i + 1}
             </div>
-            <span className={`text-[10px] tracking-wide uppercase ${step === i + 1 ? "text-white/70" : "text-white/20"}`}>{s}</span>
+            <span className={`text-[10px] tracking-wide uppercase ${step === i + 1 ? "text-white/80" : "text-white/20"}`}>{s}</span>
             {i < 2 && <div className={`h-px w-8 ${step > i + 1 ? "bg-[#C9A84C]/40" : "bg-white/10"}`} />}
           </div>
         ))}
       </div>
 
-      {/* Step 1 */}
       {step === 1 && (
         <div className="space-y-5">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -231,21 +267,45 @@ function BookingForm({ onBooked }) {
             </div>
             <div>
               <label className={labelCls}>Check-in Date</label>
-              <input className={inputCls} type="date" value={form.checkIn} onChange={set("checkIn")} />
+              <input className={inputCls} type="date" min={today} value={form.checkIn}
+                onChange={(e) => { setForm((p) => ({ ...p, checkIn: e.target.value, checkOut: "" })); setAvailabilityError(""); }} />
             </div>
             <div>
               <label className={labelCls}>Check-out Date</label>
-              <input className={inputCls} type="date" value={form.checkOut} onChange={set("checkOut")} />
+              <input className={inputCls} type="date" min={form.checkIn || today} value={form.checkOut}
+                onChange={(e) => { set("checkOut")(e); setAvailabilityError(""); }} />
             </div>
           </div>
 
-          {amount > 0 && (
+          {form.roomType && bookedRangesForRoom.length > 0 && (
+            <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-4">
+              <div className="text-[9px] tracking-[0.2em] uppercase text-amber-400/70 mb-2">
+                Already Booked Dates for {form.roomType === "2-bedroom" ? "2 Bedroom" : "Self Contain"}
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {bookedRangesForRoom.map((r, i) => (
+                  <span key={i} className="text-[11px] text-amber-300/70 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-1">
+                    {fmt(r.start)} → {fmt(r.end)}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {availabilityError && (
+            <div className="bg-red-500/10 border border-red-500/25 rounded-xl p-4 flex items-start gap-3">
+              <span className="text-red-400 text-lg mt-0.5">⚠</span>
+              <p className="text-red-300 text-xs leading-relaxed">{availabilityError}</p>
+            </div>
+          )}
+
+          {amount > 0 && !availabilityError && (
             <div className="bg-[#C9A84C]/5 border border-[#C9A84C]/20 rounded-xl p-4 flex justify-between items-center">
               <div>
-                <div className="text-[10px] uppercase tracking-widest text-white/30">Total Amount</div>
+                <div className="text-[10px] uppercase tracking-widest text-white/40">Total Amount</div>
                 <div className="text-[#C9A84C] text-lg font-semibold mt-1">₦{amount.toLocaleString()}</div>
               </div>
-              <div className="text-right text-xs text-white/30">
+              <div className="text-right text-xs text-white/40">
                 {n} night(s) × ₦{rate.toLocaleString()}
               </div>
             </div>
@@ -256,6 +316,7 @@ function BookingForm({ onBooked }) {
               if (!form.name || !form.phone || !form.roomType || !form.checkIn || !form.checkOut)
                 return setError("Please fill all fields.");
               if (amount <= 0) return setError("Select valid check-in and check-out dates.");
+              if (!checkAvailability()) return;
               setError("");
               setStep(2);
             }}
@@ -266,7 +327,6 @@ function BookingForm({ onBooked }) {
         </div>
       )}
 
-      {/* Step 2 */}
       {step === 2 && (
         <div className="space-y-6">
           <div className="bg-[#C9A84C]/5 border border-[#C9A84C]/30 rounded-2xl p-6">
@@ -279,14 +339,14 @@ function BookingForm({ onBooked }) {
                 ["Amount",         `₦${amount.toLocaleString()}`],
               ].map(([l, v]) => (
                 <div key={l} className="flex justify-between text-sm">
-                  <span className="text-white/40">{l}</span>
+                  <span className="text-white/50">{l}</span>
                   <span className={`font-semibold ${l === "Amount" ? "text-[#C9A84C]" : "text-white"}`}>{v}</span>
                 </div>
               ))}
             </div>
-            <p className="mt-4 pt-4 border-t border-white/5 text-[11px] text-white/30 leading-relaxed">
-              Transfer the exact amount above, then enter your transaction reference below and click{" "}
-              <span className="text-white/50">"I Have Made Transfer"</span>.
+            <p className="mt-4 pt-4 border-t border-white/5 text-[11px] text-white/40 leading-relaxed">
+              Transfer the exact amount above, then click{" "}
+              <span className="text-white/60">"I Have Made Transfer"</span>.
             </p>
           </div>
 
@@ -294,7 +354,7 @@ function BookingForm({ onBooked }) {
 
           <div className="flex gap-3">
             <button onClick={() => setStep(1)}
-              className="px-6 border border-white/10 hover:border-white/20 text-white/50 text-[11px] tracking-widest uppercase rounded-xl py-4 transition-colors">
+              className="px-6 border border-white/10 hover:border-white/20 text-white/60 hover:text-white text-[11px] tracking-widest uppercase rounded-xl py-4 transition-colors">
               ← Back
             </button>
             <button onClick={submitBooking} disabled={loading}
@@ -305,18 +365,17 @@ function BookingForm({ onBooked }) {
         </div>
       )}
 
-      {/* Step 3 */}
       {step === 3 && (
         <div className="text-center py-8">
           <div className="w-16 h-16 bg-[#C9A84C]/10 border border-[#C9A84C]/30 rounded-full flex items-center justify-center text-2xl mx-auto mb-5">
             ⏳
           </div>
-          <h3 className="font-playfair text-lg font-semibold mb-2">Booking Submitted!</h3>
+          <h3 className="font-playfair text-lg font-semibold text-white mb-2">Booking Submitted!</h3>
           <p className="text-white/40 text-sm leading-relaxed max-w-xs mx-auto">
             Your booking is awaiting payment confirmation. You'll be able to print your receipt once the admin confirms your transfer.
           </p>
           <button onClick={() => setStep(1)}
-            className="mt-6 border border-white/10 hover:border-[#C9A84C]/30 text-white/50 hover:text-white/70 text-[10px] tracking-widest uppercase px-6 py-3 rounded-xl transition-colors">
+            className="mt-6 border border-white/10 hover:border-[#C9A84C]/30 text-white/50 hover:text-white/80 text-[10px] tracking-widest uppercase px-6 py-3 rounded-xl transition-colors">
             Make Another Booking
           </button>
         </div>
@@ -325,12 +384,12 @@ function BookingForm({ onBooked }) {
   );
 }
 
-// ── Main Dashboard ────────────────────────────────────────────────────────────
 export default function DashboardPage() {
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("bookings");
   const [receipt, setReceipt] = useState(null);
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const fetchBookings = async () => {
     setLoading(true);
@@ -347,40 +406,81 @@ export default function DashboardPage() {
 
   useEffect(() => { fetchBookings(); }, []);
 
+  const handleLogout = async () => {
+    setLoggingOut(true);
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      window.location.href = "/login";
+    } catch (e) {
+      console.error(e);
+      setLoggingOut(false);
+    }
+  };
+
+  const activeBookings = bookings.filter((b) => b.status !== "rejected");
+
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white">
-      {/* Header */}
       <div className="border-b border-white/5 px-8 md:px-16 py-5 flex items-center justify-between">
         <div>
-          <h1 className="font-playfair text-lg font-semibold">
+          <h1 className="font-playfair text-lg font-semibold text-white">
             My <span className="text-[#C9A84C]">Dashboard</span>
           </h1>
-          <p className="text-white/30 text-[11px] tracking-wide mt-0.5">Manage your bookings and reservations</p>
+          <p className="text-white/40 text-[11px] tracking-wide mt-0.5">Manage your bookings and reservations</p>
         </div>
-        <div className="flex gap-2">
+
+        <div className="flex items-center gap-3">
           {["bookings", "new"].map((t) => (
             <button key={t} onClick={() => setActiveTab(t)}
               className={`text-[10px] tracking-widest uppercase px-4 py-2 rounded-lg transition-colors
-                ${activeTab === t ? "bg-[#C9A84C]/15 text-[#C9A84C] border border-[#C9A84C]/30" : "text-white/30 hover:text-white/50 border border-transparent"}`}>
+                ${activeTab === t
+                  ? "bg-[#C9A84C]/15 text-[#C9A84C] border border-[#C9A84C]/30"
+                  : "text-white/50 hover:text-white border border-transparent hover:border-white/10"}`}>
               {t === "new" ? "+ New Booking" : "My Bookings"}
             </button>
           ))}
+
+          <div className="h-5 w-px bg-white/10 mx-1" />
+
+          <button
+            onClick={handleLogout}
+            disabled={loggingOut}
+            className="flex items-center gap-2 text-[10px] tracking-widest uppercase px-4 py-2 rounded-lg border border-white/20 text-white hover:bg-white/5 hover:border-white/40 disabled:opacity-50 transition-all duration-200 font-medium">
+            {loggingOut ? (
+              <>
+                <span className="w-3 h-3 border border-white/40 border-t-white rounded-full animate-spin" />
+                <span>Signing out…</span>
+              </>
+            ) : (
+              <>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                  <polyline points="16 17 21 12 16 7" />
+                  <line x1="21" y1="12" x2="9" y2="12" />
+                </svg>
+                <span>Logout</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
 
       <div className="px-8 md:px-16 py-10 max-w-5xl mx-auto">
         {activeTab === "new" && (
-          <BookingForm onBooked={() => { fetchBookings(); setActiveTab("bookings"); }} />
+          <BookingForm
+            allBookings={activeBookings}
+            onBooked={() => { fetchBookings(); setActiveTab("bookings"); }}
+          />
         )}
 
         {activeTab === "bookings" && (
           <div>
             {loading ? (
-              <div className="text-center py-20 text-white/20 text-sm tracking-widest uppercase">Loading…</div>
+              <div className="text-center py-20 text-white/30 text-sm tracking-widest uppercase">Loading…</div>
             ) : bookings.length === 0 ? (
               <div className="text-center py-20">
                 <div className="text-4xl mb-4">🏠</div>
-                <p className="text-white/30 text-sm">No bookings yet.</p>
+                <p className="text-white/40 text-sm">No bookings yet.</p>
                 <button onClick={() => setActiveTab("new")}
                   className="mt-4 text-[#C9A84C] text-[10px] tracking-widest uppercase hover:underline">
                   Make your first booking →
@@ -390,12 +490,12 @@ export default function DashboardPage() {
               <div className="space-y-4">
                 {bookings.map((b) => (
                   <div key={b._id} className="bg-[#0f0f0f] border border-white/8 rounded-2xl p-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div className="space-y-1">
+                    <div className="space-y-1.5">
                       <div className="flex items-center gap-3">
-                        <span className="text-sm font-medium text-white/80">{b.name}</span>
+                        <span className="text-sm font-semibold text-white">{b.name}</span>
                         {statusPill(b.status)}
                       </div>
-                      <div className="text-white/30 text-xs">
+                      <div className="text-white/40 text-xs">
                         {b.roomType === "2-bedroom" ? "2 Bedroom" : "Self Contain"} · {fmt(b.checkIn)} → {fmt(b.checkOut)} · {nights(b.checkIn, b.checkOut)} night(s) · {b.guests} guest(s)
                       </div>
                       <div className="text-[#C9A84C] text-sm font-semibold">₦{Number(b.amount).toLocaleString()}</div>
@@ -409,7 +509,7 @@ export default function DashboardPage() {
                         </button>
                       )}
                       {b.status === "awaiting_confirmation" && (
-                        <span className="text-[10px] text-white/20 italic">Awaiting admin confirmation…</span>
+                        <span className="text-[10px] text-white/30 italic">Awaiting admin confirmation…</span>
                       )}
                       {b.status === "rejected" && (
                         <span className="text-[10px] text-red-400/60 italic">Contact support for assistance.</span>

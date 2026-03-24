@@ -6,7 +6,8 @@ import {
   FaWifi, FaSnowflake, FaTv, FaUtensils, FaBolt, 
   FaParking, FaLock, FaSwimmingPool,
   FaPhone, FaWhatsapp, FaEnvelope, FaMapMarkerAlt,
-  FaFacebookF, FaInstagram, FaTwitter
+  FaFacebookF, FaInstagram, FaTwitter,
+  FaSun
 } from 'react-icons/fa'
 
 export default function HomePage() {
@@ -60,6 +61,7 @@ export default function HomePage() {
     { icon: <FaParking />,       name: 'Free Parking' },
     { icon: <FaLock />,          name: '24/7 Security' },
     { icon: <FaSwimmingPool />,  name: 'Swimming Pool' },
+    { icon: <FaSun />,           name: 'Solar' },
   ]
 
   const reviews = [
@@ -296,96 +298,128 @@ const galleryImages = [
       </section>
 
       {/* ══════════════ BOOKING ══════════════ */}
-      <section id="booking" className="py-28 px-6 md:px-16 bg-[#0a0a0a]"
-        data-section="booking" ref={ref('booking')}>
-        <div className={`grid md:grid-cols-2 gap-20 max-w-6xl mx-auto transition-all duration-1000 ${reveal('booking')}`}>
+     <section 
+  id="booking" 
+  className="py-28 px-6 md:px-16 bg-[#0a0a0a]"
+  data-section="booking" 
+  ref={ref('booking')}
+>
+  <div className={`grid md:grid-cols-2 gap-20 max-w-6xl mx-auto transition-all duration-1000 ${reveal('booking')}`}>
 
-          <div className="flex flex-col justify-center">
-            <div className="section-label">Reservations</div>
-            <h2 className="font-playfair text-4xl md:text-5xl font-normal leading-tight mb-6">
-              Book Your<br /><em className="text-[#C9A84C]">Stay Today</em>
-            </h2>
-            <p className="text-white/50 text-sm leading-relaxed mb-10">
-              Secure your stay at Comfort Service Apartment in just a few clicks.
-              Fill in your details, choose your dates and pay securely via Paystack.
-            </p>
-            <ul className="space-y-4 mb-12">
-              {[
-                'Instant confirmation sent to your email',
-                'Secure payment powered by Paystack',
-                'Free cancellation 48hrs before check-in',
-                '24/7 WhatsApp support available',
-                'Self check-in with digital key code',
-              ].map(item => (
-                <li key={item} className="flex items-start gap-3 text-sm text-white/50">
-                  <span className="text-[#C9A84C] mt-0.5 text-xs flex-shrink-0">✦</span>
-                  {item}
-                </li>
-              ))}
-            </ul>
-            <div className="border border-[#C9A84C]/20 p-6 bg-[#C9A84C]/5 rounded-lg">
-              <div className="text-[10px] tracking-[0.3em] uppercase text-[#C9A84C] mb-2">Starting From</div>
-              <div className="font-playfair text-5xl font-semibold">₦100,000</div>
-              <div className="text-white/40 text-xs tracking-widest uppercase mt-1">Per Night</div>
-            </div>
+    <div className="flex flex-col justify-center">
+      <div className="section-label">Reservations</div>
+      <h2 className="font-playfair text-4xl md:text-5xl font-normal leading-tight mb-6">
+        Book Your<br /><em className="text-[#C9A84C]">Stay Today</em>
+      </h2>
+      <p className="text-white/50 text-sm leading-relaxed mb-10">
+        Secure your stay at Comfort Serene Apartment in just a few clicks. 
+        Fill in your details, choose your dates and pay via bank transfer.
+      </p>
+
+      <ul className="space-y-4 mb-12">
+        {[
+          'Instant confirmation of your booking',
+          'Payment via secure bank transfer',
+          'Free cancellation 48hrs before check-in',
+          '24/7 WhatsApp support available',
+          'Self check-in with digital key code',
+        ].map((item) => (
+          <li key={item} className="flex items-start gap-3 text-sm text-white/50">
+            <span className="text-[#C9A84C] mt-0.5 text-xs flex-shrink-0">✦</span>
+            {item}
+          </li>
+        ))}
+      </ul>
+
+      <div className="border border-[#C9A84C]/20 p-6 bg-[#C9A84C]/5 rounded-lg">
+        <div className="text-[10px] tracking-[0.3em] uppercase text-[#C9A84C] mb-2">Starting From</div>
+        <div className="font-playfair text-5xl font-semibold">₦100,000</div>
+        <div className="text-white/40 text-xs tracking-widest uppercase mt-1">Per Night</div>
+      </div>
+    </div>
+
+    <div className="bg-[#0f0f0f] border border-white/8 p-10 relative rounded-lg">
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#C9A84C] to-transparent rounded-t-lg" />
+      
+      <h3 className="font-playfair text-2xl font-normal mb-8 text-white/90">
+        Reserve Your Dates
+      </h3>
+
+      <div className="space-y-5">
+        <div>
+          <label className="block text-[10px] tracking-[0.2em] uppercase text-white/40 mb-2">
+            Email Address
+          </label>
+          <input 
+            type="email" 
+            placeholder="your@email.com"
+            className="w-full bg-[#0a0a0a] border border-white/10 px-4 py-3.5 text-sm text-white placeholder-white/20 outline-none focus:border-[#C9A84C]/50 transition-colors rounded" 
+          />
+        </div>
+
+        <div>
+          <label className="block text-[10px] tracking-[0.2em] uppercase text-white/40 mb-2">
+            Phone Number
+          </label>
+          <input 
+            type="tel" 
+            placeholder="+234 800 000 0000"
+            className="w-full bg-[#0a0a0a] border border-white/10 px-4 py-3.5 text-sm text-white placeholder-white/20 outline-none focus:border-[#C9A84C]/50 transition-colors rounded" 
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-[10px] tracking-[0.2em] uppercase text-white/40 mb-2">
+              Check-In
+            </label>
+            <input 
+              type="date" 
+              value={checkIn} 
+              onChange={e => setCheckIn(e.target.value)}
+              className="w-full bg-[#0a0a0a] border border-white/10 px-4 py-3.5 text-sm text-white/70 outline-none focus:border-[#C9A84C]/50 transition-colors rounded" 
+            />
           </div>
+          <div>
+            <label className="block text-[10px] tracking-[0.2em] uppercase text-white/40 mb-2">
+              Check-Out
+            </label>
+            <input 
+              type="date" 
+              value={checkOut} 
+              onChange={e => setCheckOut(e.target.value)}
+              className="w-full bg-[#0a0a0a] border border-white/10 px-4 py-3.5 text-sm text-white/70 outline-none focus:border-[#C9A84C]/50 transition-colors rounded" 
+            />
+          </div>
+        </div>
 
-          <div className="bg-[#0f0f0f] border border-white/8 p-10 relative rounded-lg">
-            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#C9A84C] to-transparent rounded-t-lg" />
-            <h3 className="font-playfair text-2xl font-normal mb-8 text-white/90">Reserve Your Dates</h3>
-
-            <div className="space-y-5">
-              <div>
-                <label className="block text-[10px] tracking-[0.2em] uppercase text-white/40 mb-2">Email Address</label>
-                <input type="email" placeholder="your@email.com"
-                  className="w-full bg-[#0a0a0a] border border-white/10 px-4 py-3.5 text-sm text-white placeholder-white/20 outline-none focus:border-[#C9A84C]/50 transition-colors rounded" />
-              </div>
-              <div>
-                <label className="block text-[10px] tracking-[0.2em] uppercase text-white/40 mb-2">Phone Number</label>
-                <input type="tel" placeholder="+234 800 000 0000"
-                  className="w-full bg-[#0a0a0a] border border-white/10 px-4 py-3.5 text-sm text-white placeholder-white/20 outline-none focus:border-[#C9A84C]/50 transition-colors rounded" />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[10px] tracking-[0.2em] uppercase text-white/40 mb-2">Check-In</label>
-                  <input type="date" value={checkIn} onChange={e => setCheckIn(e.target.value)}
-                    className="w-full bg-[#0a0a0a] border border-white/10 px-4 py-3.5 text-sm text-white/70 outline-none focus:border-[#C9A84C]/50 transition-colors rounded" />
+        <div className="border border-[#C9A84C]/20 bg-[#C9A84C]/5 p-5 rounded-lg">
+          <div className="flex justify-between items-center">
+            <div>
+              <div className="text-[10px] tracking-[0.2em] uppercase text-white/40">Total Amount</div>
+              {nights > 0 && (
+                <div className="text-xs text-white/30 mt-0.5">
+                  {nights} night{nights > 1 ? 's' : ''} × ₦100,000
                 </div>
-                <div>
-                  <label className="block text-[10px] tracking-[0.2em] uppercase text-white/40 mb-2">Check-Out</label>
-                  <input type="date" value={checkOut} onChange={e => setCheckOut(e.target.value)}
-                    className="w-full bg-[#0a0a0a] border border-white/10 px-4 py-3.5 text-sm text-white/70 outline-none focus:border-[#C9A84C]/50 transition-colors rounded" />
-                </div>
-              </div>
-
-              <div className="border border-[#C9A84C]/20 bg-[#C9A84C]/5 p-5 rounded-lg">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <div className="text-[10px] tracking-[0.2em] uppercase text-white/40">Total Amount</div>
-                    {nights > 0 && (
-                      <div className="text-xs text-white/30 mt-0.5">
-                        {nights} night{nights > 1 ? 's' : ''} × ₦100,000
-                      </div>
-                    )}
-                  </div>
-                  <div className="font-playfair text-3xl font-semibold text-[#C9A84C]">
-                    {totalPrice ? `₦${totalPrice.toLocaleString()}` : '₦100,000'}
-                  </div>
-                </div>
-              </div>
-
-              <button className="btn-gold w-full text-center py-5">
-                Proceed to Payment →
-              </button>
-
-              <p className="text-center text-[10px] text-white/25 tracking-wider">
-                🔒 Secured by Paystack · SSL Encrypted
-              </p>
+              )}
+            </div>
+            <div className="font-playfair text-3xl font-semibold text-[#C9A84C]">
+              {totalPrice ? `₦${totalPrice.toLocaleString()}` : '₦100,000'}
             </div>
           </div>
         </div>
-      </section>
 
+        <button className="btn-gold w-full text-center py-5">
+          Proceed with Bank Transfer →
+        </button>
+
+        <p className="text-center text-[10px] text-white/25 tracking-wider">
+          🔒 Secure Bank Transfer · Manual Confirmation
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
       {/* ══════════════ LOCATION ══════════════ */}
       <section id="location" className="py-28 px-6 md:px-16 bg-[#0f0f0f]"
         data-section="location" ref={ref('location')}>

@@ -1,33 +1,48 @@
 import { NextResponse } from "next/server";
-import { connectDB } from "@/lib/mongodb";
 import { getCurrentUser } from "@/lib/auth";
+import { connectDB } from "@/lib/mongodb";
 import Booking from "@/models/Booking";
 
 export async function GET() {
   try {
-    await connectDB();
     const user = await getCurrentUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    await connectDB();
 
     let bookings;
-    if (user.role === "admin") {
-      bookings = await Booking.find().sort({ createdAt: -1 }).lean();
-    } else {
-      bookings = await Booking.find({ userId: user._id }).sort({ createdAt: -1 }).lean();
+
+    // Admin (either from password gate or JWT role)
+    if (user.isAdmin === true || user.role === "admin") {
+      bookings = await Booking.find({})
+        .sort({ createdAt: -1 })
+        .lean();
+    } 
+    // Normal client
+    else {
+      bookings = await Booking.find({ userId: user._id })
+        .sort({ createdAt: -1 })
+        .lean();
     }
 
     return NextResponse.json({ bookings });
+
   } catch (err) {
-    console.error("GET /bookings error:", err);
+    console.error("GET /api/auth/bookings error:", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
 
 export async function POST(req) {
   try {
-    await connectDB();
     const user = await getCurrentUser();
-    if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    await connectDB();
 
     const body = await req.json();
     const { name, phone, roomType, checkIn, checkOut, guests, amount, transferReference } = body;
@@ -52,21 +67,21 @@ export async function POST(req) {
 
     return NextResponse.json({ booking }, { status: 201 });
   } catch (err) {
-    console.error("POST /bookings error:", err);
+    console.error("POST /api/auth/bookings error:", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
 
 export async function PATCH(req) {
   try {
-    await connectDB();
     const user = await getCurrentUser();
-    if (!user || user.role !== "admin") {
+
+    // Only admin can confirm/reject bookings
+    if (!user || (user.isAdmin !== true && user.role !== "admin")) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    const body = await req.json();
-    const { bookingId, action } = body;
+    const { bookingId, action } = await req.json();
 
     if (!bookingId || !["confirm", "reject"].includes(action)) {
       return NextResponse.json({ error: "Invalid request" }, { status: 400 });
@@ -77,12 +92,18 @@ export async function PATCH(req) {
         ? { paymentStatus: "confirmed", status: "confirmed" }
         : { paymentStatus: "rejected", status: "rejected" };
 
-    const booking = await Booking.findByIdAndUpdate(bookingId, update, { new: true }).lean();
-    if (!booking) return NextResponse.json({ error: "Booking not found" }, { status: 404 });
+    await connectDB();
+
+    const booking = await Booking.findByIdAndUpdate(bookingId, update, { new: true });
+
+    if (!booking) {
+      return NextResponse.json({ error: "Booking not found" }, { status: 404 });
+    }
 
     return NextResponse.json({ booking });
+
   } catch (err) {
-    console.error("PATCH /bookings error:", err);
+    console.error("PATCH /api/auth/bookings error:", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
