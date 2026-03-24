@@ -64,14 +64,50 @@ export default function HomePage() {
     { icon: <FaSun />,           name: 'Solar' },
   ]
 
-  const reviews = [
-    { initial: 'A', name: 'Adebayo M.', date: 'February 2026', rating: 5,
-      text: 'Absolutely stunning apartment! The AC was perfect, kitchen fully stocked. Best shortlet in Ibadan hands down. Will definitely be coming back.' },
-    { initial: 'C', name: 'Chioma E.', date: 'January 2026', rating: 5,
-      text: 'We stayed for 4 nights and it felt like home. The generator never failed once and the WiFi was blazing fast. Very clean and secure.' },
-    { initial: 'T', name: 'Tunde F.', date: 'March 2026', rating: 5,
-      text: 'Great value for money! The pool was a wonderful bonus. Host was very responsive on WhatsApp. Even better in person than the photos!' },
-  ]
+ const reviews = [
+  {
+    initial: 'A',
+    name: 'Adebayo M.',
+    date: 'February 2026',
+    rating: 5,
+    text: 'Absolutely stunning apartment! The AC was perfect, kitchen fully stocked. Best shortlet in Ibadan hands down. Will definitely be coming back.'
+  },
+  {
+    initial: 'C',
+    name: 'Chioma E.',
+    date: 'January 2026',
+    rating: 5,
+    text: 'We stayed for 4 nights and it felt like home. The generator never failed once and the WiFi was blazing fast. Very clean and secure.'
+  },
+  {
+    initial: 'T',
+    name: 'Tunde F.',
+    date: 'March 2026',
+    rating: 5,
+    text: 'Great value for money! The pool was a wonderful bonus. Host was very responsive on WhatsApp. Even better in person than the photos!'
+  },
+  {
+    initial: 'F',
+    name: 'Funke O.',
+    date: 'December 2025',
+    rating: 5,
+    text: 'The apartment is so beautiful and well maintained. Check-in was seamless with the digital code. We enjoyed every moment of our stay.'
+  },
+  {
+    initial: 'K',
+    name: 'Kayode A.',
+    date: 'November 2025',
+    rating: 5,
+    text: 'Quiet location yet very close to everything. The 2-bedroom was spacious enough for our family. Excellent service and very secure environment.'
+  },
+  {
+    initial: 'S',
+    name: 'Sandra B.',
+    date: 'October 2025',
+    rating: 5,
+    text: 'This is my second time staying here and it keeps getting better. Super clean, fast WiFi, and the host is always available when needed.'
+  },
+];
 
 const galleryImages = [
   { src: 'https://res.cloudinary.com/dwhga1raw/image/upload/v1774100994/SWZ_6400_oxue9s.jpg', tall: true },
@@ -106,9 +142,9 @@ const galleryImages = [
           ))}
         </ul>
 
-        <a href="/login" className="btn-gold text-[10px] px-2 py-2.5 ml-8">
-          Book Now
-        </a>
+       <a href="/login" className="btn-gold text-[10px] px-3 py-1.5 ml-8">
+  Book Now
+</a>
       </nav>
 
       {/* ══════════════ HERO ══════════════ */}
@@ -311,7 +347,7 @@ const galleryImages = [
       <h2 className="font-playfair text-4xl md:text-5xl font-normal leading-tight mb-6">
         Book Your<br /><em className="text-[#C9A84C]">Stay Today</em>
       </h2>
-      <p className="text-white/50 text-sm leading-relaxed mb-10">
+      <p className="text-white/60 text-sm leading-relaxed mb-10">
         Secure your stay at Comfort Serene Apartment in just a few clicks. 
         Fill in your details, choose your dates and pay via bank transfer.
       </p>
@@ -458,43 +494,69 @@ const galleryImages = [
       </section>
 
       {/* ══════════════ REVIEWS ══════════════ */}
-      <section id="reviews" className="py-28 px-6 md:px-16 bg-[#0a0a0a]"
-        data-section="reviews" ref={ref('reviews')}>
-        <div className={`max-w-6xl mx-auto transition-all duration-1000 ${reveal('reviews')}`}>
+    <section
+  id="reviews"
+  className="py-28 px-6 md:px-16 bg-[#0a0a0a] overflow-hidden"
+  data-section="reviews"
+  ref={ref("reviews")}
+>
+  <div
+    className={`max-w-6xl mx-auto transition-all duration-1000 ${reveal(
+      "reviews"
+    )}`}
+  >
+    <div className="text-center mb-16">
+      <div className="section-label justify-center">Guest Reviews</div>
+      <h2 className="font-playfair text-4xl md:text-5xl font-normal">
+        What Our Guests <em className="text-[#C9A84C]">Say</em>
+      </h2>
+    </div>
 
-          <div className="text-center mb-16">
-            <div className="section-label justify-center">Guest Reviews</div>
-            <h2 className="font-playfair text-4xl md:text-5xl font-normal">
-              What Our Guests <em className="text-[#C9A84C]">Say</em>
-            </h2>
-          </div>
+    {/* Infinite Right-to-Left Marquee */}
+    <div className="relative overflow-x-hidden">
+      <div className="flex gap-6 animate-marquee">
+        {[...reviews, ...reviews].map((r, index) => (
+          <div
+            key={index}
+            className="min-w-[380px] max-w-[380px] border border-white/8 p-8 hover:border-[#C9A84C]/30 
+                       transition-all duration-300 rounded-2xl bg-[#0f0f0f] flex flex-col"
+          >
+            {/* Stars */}
+            <div className="flex gap-0.5 mb-5">
+              {Array(r.rating)
+                .fill(0)
+                .map((_, i) => (
+                  <span key={i} className="text-[#C9A84C] text-sm">
+                    ★
+                  </span>
+                ))}
+            </div>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            {reviews.map((r) => (
-              <div key={r.name}
-                className="border border-white/8 p-8 hover:border-[#C9A84C]/30 transition-all duration-300 rounded-lg">
-                <div className="flex gap-0.5 mb-5">
-                  {Array(r.rating).fill(0).map((_, i) => (
-                    <span key={i} className="text-[#C9A84C] text-sm">★</span>
-                  ))}
-                </div>
-                <p className="text-white/50 text-sm leading-relaxed italic mb-8">
-                  &ldquo;{r.text}&rdquo;
-                </p>
-                <div className="flex items-center gap-3 border-t border-white/8 pt-6">
-                  <div className="w-10 h-10 bg-[#C9A84C]/10 border border-[#C9A84C]/30 flex items-center justify-center font-playfair text-lg text-[#C9A84C] font-semibold rounded-full">
-                    {r.initial}
-                  </div>
-                  <div>
-                    <div className="text-sm font-medium text-white/80">{r.name}</div>
-                    <div className="text-[10px] text-white/30 tracking-wider">{r.date}</div>
-                  </div>
-                </div>
+            {/* Review Text */}
+            <p className="text-white/60 text-[15px] leading-[1.65] italic mb-8 break-words">
+              “{r.text}”
+            </p>
+
+            {/* Reviewer Info */}
+            <div className="flex items-center gap-3 border-t border-white/8 pt-6 mt-auto">
+              <div className="w-11 h-11 rounded-full overflow-hidden border border-[#C9A84C]/30 shrink-0">
+  <img
+    src={`https://api.dicebear.com/7.x/initials/svg?seed=${r.name}`}
+    alt={r.name}
+    className="w-full h-full object-cover"
+  />
+</div>
+              <div>
+                <div className="text-sm font-medium text-white">{r.name}</div>
+                <div className="text-[10px] text-white/40 tracking-wider">{r.date}</div>
               </div>
-            ))}
+            </div>
           </div>
-        </div>
-      </section>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
 
       {/* ══════════════ CTA ══════════════ */}
       <section className="relative py-28 px-6 overflow-hidden">
@@ -536,7 +598,7 @@ const galleryImages = [
       <div className="font-playfair text-2xl font-semibold mb-6">
         Comfort <span className="text-[#C9A84C]">Serene Apartment</span>
       </div>
-      <p className="text-xs text-white/30 leading-relaxed max-w-xs mb-8">
+      <p className="text-xs text-white/70 leading-relaxed max-w-xs mb-8">
         Premium shortlet living in the heart of Ibadan. Your comfort is our priority
         from the moment you book to the moment you check out.
       </p>
@@ -549,15 +611,14 @@ const galleryImages = [
           { icon: <FaWhatsapp />,  href: 'https://wa.me/2349135415924' },
         ].map((s, i) => (
           <a key={i} href={s.href} target="_blank" rel="noreferrer"
-            className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center text-sm text-white/30 hover:border-[#C9A84C]/50 hover:text-[#C9A84C] transition-all">
+            className="w-10 h-10 rounded-full border border-white/30 flex items-center justify-center text-sm text-white/70 hover:border-[#C9A84C]/50 hover:text-[#C9A84C] transition-all">
             {s.icon}
           </a>
         ))}
       </div>
     </div>
 
-    {/* quick links */}
-    {/* quick links */}
+   
 <div className="mt-8">
   <h4 className="text-[10px] tracking-[0.3em] uppercase text-[#C9A84C] mb-10 font-semibold">
     Quick Links
@@ -566,7 +627,7 @@ const galleryImages = [
     {['About','Gallery','Amenities','Booking','Location','Reviews'].map(l => (
       <li key={l}>
         <a href={`#${l.toLowerCase()}`}
-          className="text-xs text-white/30 hover:text-[#C9A84C] transition-colors tracking-wide flex items-center gap-2 group">
+          className="text-xs text-white/70 hover:text-[#C9A84C] transition-colors tracking-wide flex items-center gap-2 group">
           <span className="w-3 h-px bg-[#C9A84C]/0 group-hover:bg-[#C9A84C] transition-all duration-300" />
           {l}
         </a>
@@ -581,18 +642,40 @@ const galleryImages = [
     Contact Us
   </h4>
   <div className="space-y-7">
-    {[
-      { icon: <FaPhone className="text-[#C9A84C]" />,        text: '+2349135415924' },
-      { icon: <FaWhatsapp className="text-[#C9A84C]" />,     text: '+2349135415924' },
-      { icon: <FaEnvelope className="text-[#C9A84C]" />,     text: 'info@comfortserene.com' },
-      { icon: <FaMapMarkerAlt className="text-[#C9A84C]" />, text: 'Ibadan, Oyo State' },
-    ].map((c, i) => (
-      <div key={i} className="flex items-start gap-3 text-xs text-white/30 hover:text-white/50 transition-colors cursor-default">
-        <span className="mt-0.5 flex-shrink-0 text-sm">{c.icon}</span>
-        <span className="leading-relaxed">{c.text}</span>
-      </div>
-    ))}
-  </div>
+  {[
+    {
+      icon: <FaPhone className="text-[#C9A84C]" />,
+      text: '+2349135415924',
+      link: 'tel:+2349135415924',
+    },
+    {
+      icon: <FaWhatsapp className="text-[#C9A84C]" />,
+      text: '+2349135415924',
+      link: 'https://wa.me/2349135415924',
+    },
+    {
+      icon: <FaEnvelope className="text-[#C9A84C]" />,
+      text: 'info@comfortserene.com',
+      link: 'mailto:info@comfortserene.com',
+    },
+    {
+      icon: <FaMapMarkerAlt className="text-[#C9A84C]" />,
+      text: 'Ibadan, Oyo State',
+      link: 'https://www.google.com/maps?q=7.3921,3.8885',
+    },
+  ].map((c, i) => (
+    <a
+      key={i}
+      href={c.link}
+      target="_blank"
+      rel="noreferrer"
+      className="flex items-start gap-3 text-xs text-white/70 hover:text-white/50 transition-colors"
+    >
+      <span className="mt-0.5 flex-shrink-0 text-sm">{c.icon}</span>
+      <span className="leading-relaxed">{c.text}</span>
+    </a>
+  ))}
+</div>
 </div>
   </div>
 
@@ -603,17 +686,23 @@ const galleryImages = [
 
   {/* bottom bar */}
   <div className="px-6 md:px-16 py-8 max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-    <span className="text-[10px] text-white/20 tracking-wider">
+    <span className="text-[10px] text-white/70 tracking-wider">
       © {new Date().getFullYear()} Comfort Service Apartment. All rights reserved.
     </span>
-    <div className="flex items-center gap-8">
-      {['Privacy Policy', 'Terms of Service'].map(l => (
-        <a key={l} href="#"
-          className="text-[10px] text-white/20 hover:text-[#C9A84C] tracking-wider transition-colors">
-          {l}
-        </a>
-      ))}
-    </div>
+  <div className="flex items-center gap-8">
+  {[
+    { label: 'Privacy Policy', href: '/privacy' },
+    { label: 'Terms of Service', href: '/terms' },
+  ].map((l) => (
+    <a
+      key={l.label}
+      href={l.href}
+      className="text-[10px] text-white/70 hover:text-[#C9A84C] tracking-wider transition-colors"
+    >
+      {l.label}
+    </a>
+  ))}
+</div>
   </div>
 </footer>
 

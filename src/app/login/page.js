@@ -135,7 +135,7 @@ export default function LoginPage() {
             <h1 className="font-playfair text-4xl font-normal text-white mb-2">
               Sign In
             </h1>
-            <p className="text-white/40 text-sm leading-relaxed">
+            <p className="text-white/70 text-sm leading-relaxed">
               Sign in to manage your bookings at Comfort Service Apartment
             </p>
           </div>
@@ -158,7 +158,7 @@ export default function LoginPage() {
 
             {/* email */}
             <div>
-              <label className="block text-[10px] tracking-[0.2em] uppercase text-white/40 mb-2">
+              <label className="block text-[10px] tracking-[0.2em] uppercase text-white/70 mb-2">
                 Email Address
               </label>
               <div className="relative">
@@ -176,7 +176,7 @@ export default function LoginPage() {
             {/* password */}
             <div>
               <div className="flex justify-between items-center mb-2">
-                <label className="block text-[10px] tracking-[0.2em] uppercase text-white/40">
+                <label className="block text-[10px] tracking-[0.2em] uppercase text-white/70">
                   Password
                 </label>
                 <Link href="/forgot-password"
@@ -185,7 +185,7 @@ export default function LoginPage() {
                 </Link>
               </div>
               <div className="relative">
-                <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-white/20 text-sm" />
+                <FaLock className="absolute left-4 top-1/2 -translate-y-1/2 text-white/60 text-sm" />
                 <input
                   type={showPassword ? 'text' : 'password'}
                   name="password"
@@ -228,7 +228,7 @@ export default function LoginPage() {
           </div>
 
 
-          <p className="text-center text-sm text-white/30">
+          <p className="text-center text-sm text-white/70">
             Don&apos;t have an account?{' '}
             <Link href="/signup"
               className="text-[#C9A84C] hover:text-[#d4b35a] transition-colors font-medium">
@@ -238,7 +238,7 @@ export default function LoginPage() {
 
           <div className="text-center mt-6">
             <Link href="/"
-              className="text-[10px] text-white/20 hover:text-white/40 tracking-widest uppercase transition-colors">
+              className="text-[10px] text-white/70 hover:text-white/90 tracking-widest uppercase transition-colors">
               ← Back to Home
             </Link>
           </div>

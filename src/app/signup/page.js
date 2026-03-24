@@ -90,8 +90,8 @@ export default function SignupPage() {
 
   const inputClass = "w-full bg-[#0a0a0a] border border-white/10 pl-11 pr-4 py-3 rounded-lg text-sm text-white outline-none focus:border-[#C9A84C]/50 focus:shadow-[0_0_0_1px_rgba(201,168,76,0.15)] transition-all"
   const inputPwdClass = "w-full bg-[#0a0a0a] border border-white/10 pl-11 pr-12 py-3 rounded-lg text-sm text-white outline-none focus:border-[#C9A84C]/50 focus:shadow-[0_0_0_1px_rgba(201,168,76,0.15)] transition-all"
-  const labelClass = "block text-[10px] tracking-[0.25em] uppercase text-white/30 mb-1 font-medium"
-  const iconClass = "absolute left-4 top-1/2 -translate-y-1/2 text-white/20"
+  const labelClass = "block text-[10px] tracking-[0.25em] uppercase text-white/70 mb-1 font-medium"
+  const iconClass = "absolute left-4 top-1/2 -translate-y-1/2 text-white/30"
 
   return (
     <div className="bg-[#0a0a0a] flex min-h-screen">
@@ -216,7 +216,7 @@ export default function SignupPage() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/50 transition p-1">
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white/50 transition p-1">
                     {showPassword ? <FaEyeSlash /> : <FaEye />}
                   </button>
                 </div>
@@ -251,7 +251,7 @@ export default function SignupPage() {
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/20 hover:text-white/50 transition p-1">
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white/50 transition p-1">
                     {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
                   </button>
                 </div>
@@ -296,7 +296,7 @@ export default function SignupPage() {
             </div>
 
             {/* login link */}
-            <p className="text-center text-sm text-white/30">
+            <p className="text-center text-sm text-white/60">
               Already have an account?{' '}
               <Link href="/login"
                 className="text-[#C9A84C] hover:text-[#d4b35a] transition-colors font-medium">
@@ -307,7 +307,7 @@ export default function SignupPage() {
             {/* back to home */}
             <div className="text-center mt-6">
               <Link href="/"
-                className="text-[10px] text-white/20 hover:text-white/40 tracking-widest uppercase transition-colors">
+                className="text-[10px] text-white/70 hover:text-white/40 tracking-widest uppercase transition-colors">
                 ← Back to Home
               </Link>
             </div>

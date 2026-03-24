@@ -172,3 +172,22 @@
 .font-playfair {
   font-family: var(--font-playfair);
 }
+
+
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 35s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;   /* Pause on hover - nice UX */
+}
