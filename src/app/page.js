@@ -609,8 +609,7 @@ const galleryImages = [
       <div className="flex gap-4">
         {[
           { icon: <FaFacebookF />, href: '#' },
-          { icon: <FaInstagram />, href: '#' },
-          { icon: <FaTwitter />,   href: '#' },
+          { icon: <FaInstagram />, href: 'https://www.instagram.com/comfo.rtapartment/' },
           { icon: <FaWhatsapp />,  href: 'https://wa.me/2349135415924' },
         ].map((s, i) => (
           <a key={i} href={s.href} target="_blank" rel="noreferrer"

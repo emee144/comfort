@@ -313,13 +313,15 @@ function BookingForm({ onBooked, allBookings }) {
 
           <button
             onClick={() => {
-              if (!form.name || !form.phone || !form.roomType || !form.checkIn || !form.checkOut)
-                return setError("Please fill all fields.");
-              if (amount <= 0) return setError("Select valid check-in and check-out dates.");
-              if (!checkAvailability()) return;
-              setError("");
-              setStep(2);
-            }}
+  if (!form.name || !form.phone || !form.roomType || !form.checkIn || !form.checkOut)
+    return setError("Please fill all fields.");
+  if (new Date(form.checkIn) < new Date(today))
+    return setError("Check-in date cannot be in the past.");
+  if (amount <= 0) return setError("Select valid check-in and check-out dates.");
+  if (!checkAvailability()) return;
+  setError("");
+  setStep(2);
+}}
             className="w-full bg-[#C9A84C] hover:bg-[#b8943e] text-black text-[11px] tracking-widest uppercase font-bold py-4 rounded-xl transition-colors mt-2">
             Continue to Payment →
           </button>

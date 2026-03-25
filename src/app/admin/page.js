@@ -113,7 +113,7 @@ function PasswordGate({ onUnlock }) {
           <button
             onClick={handleSubmit}
             disabled={loading}
-            className="w-full bg-[#C9A84C] hover:bg-[#b8943e] disabled:opacity-50 text-black text-[11px] tracking-widest uppercase font-bold py-3.5 rounded-xl transition-colors">
+            className="w-full bg-[#C9A84C] hover:bg-[#b8943e] disabled:opacity-50 text-black text-[11px] tracking-widest uppercase font-bold py-3.5 rounded-xl transition-colors cursor-pointer">
             {loading ? "Verifying…" : "Enter Admin Panel"}
           </button>
         </div>
@@ -155,7 +155,7 @@ function ConfirmModal({ booking, action, onConfirm, onCancel, loading }) {
         </div>
         <div className="flex gap-3">
           <button onClick={onCancel}
-            className="flex-1 border border-white/10 hover:border-white/20 text-white text-[11px] tracking-widest uppercase py-3 rounded-xl transition-colors">
+            className="flex-1 border border-white/10 hover:border-white/20 text-white text-[11px] tracking-widest uppercase py-3 rounded-xl transition-colors cursor-pointer">
             Cancel
           </button>
           <button onClick={onConfirm} disabled={loading}
@@ -404,7 +404,7 @@ export default function AdminPage() {
         <button
           onClick={handleLogout}
           disabled={loggingOut}
-          className="flex items-center gap-2 text-[10px] tracking-widest uppercase px-4 py-2 rounded-lg border border-white/20 text-white hover:bg-white/5 hover:border-white/40 disabled:opacity-50 transition-all font-medium">
+          className="flex items-center gap-2 text-[10px] tracking-widest uppercase px-4 py-2 rounded-lg border border-white/20 text-white hover:bg-white/5 hover:border-white/40 disabled:opacity-50 transition-all font-medium cursor-pointer">
           {loggingOut ? (
             <>
               <span className="w-3 h-3 border border-white/40 border-t-white rounded-full animate-spin" />
