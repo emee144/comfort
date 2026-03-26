@@ -316,7 +316,7 @@ useEffect(() => {
   );
 
   return (
-    <div className="bg-[#0f0f0f] border border-white/8 rounded-2xl p-8 max-w-4xl mx-auto space-y-5">
+    <div className="bg-[#0f0f0f] border border-white/8 rounded-2xl p-4 md:p-8 max-w-4xl mx-auto space-y-5">
       <h2 className="font-playfair text-xl font-semibold text-white mb-2">
         New <span className="text-[#C9A84C]">Booking</span>
       </h2>
@@ -437,7 +437,7 @@ useEffect(() => {
 
           {error && <p className="text-red-400 text-xs">{error}</p>}
 
-          <div className="flex gap-3">
+          <div className="flex flex-col md:flex-row gap-3">
             <button onClick={() => { setStep(1); setError(""); }}
               className="flex-1 border border-white/10 hover:border-white/20 text-white/60 text-[11px] tracking-widest uppercase py-4 rounded-xl transition-colors">
               ← Back
@@ -551,7 +551,7 @@ const fetchUser = async () => {
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white">
-      <div className="border-b border-white/5 px-8 md:px-16 py-5 flex items-center justify-between">
+      <div className="border-b border-white/5 px-4 md:px-16 py-5 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="font-playfair text-lg font-semibold text-white">
             Welcome, <span className="text-[#C9A84C]">
@@ -561,7 +561,7 @@ const fetchUser = async () => {
           <p className="text-white/40 text-[11px] tracking-wide mt-0.5">Manage your bookings and reservations</p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           {["bookings", "new"].map((t) => (
             <button key={t} onClick={() => setActiveTab(t)}
               className={`text-[10px] tracking-widest uppercase px-4 py-2 rounded-lg transition-colors cursor-pointer
@@ -597,7 +597,7 @@ const fetchUser = async () => {
         </div>
       </div>
 
-      <div className="px-8 md:px-16 py-10 max-w-5xl mx-auto">
+      <div className="px-4 md:px-16 py-8 md:py-10 max-w-5xl mx-auto">
        {activeTab === "new" && (
   <div className="space-y-8">
     {/* Apartment pictures */}
