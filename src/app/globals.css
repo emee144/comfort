@@ -191,3 +191,61 @@
 .animate-marquee:hover {
   animation-play-state: paused;   /* Pause on hover - nice UX */
 }
+
+
+/* ===== Booking Picture Styles ===== */
+.booking-pictures {
+  padding: 2rem;
+  background-color: #0f0f0f;
+}
+
+.booking-title {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 2rem;
+  text-align: center;
+  color: white;
+}
+
+.scrollers-container {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap; 
+}
+
+/* Each scroller section */
+.scroller {
+  flex: 1;
+  min-width: 300px;
+}
+
+.scroller-title {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: #D4A017;
+}
+
+/* Horizontal scroll carousel */
+.image-carousel {
+  display: flex;
+  overflow-x: auto;
+  gap: 1rem;
+  padding-bottom: 1rem;
+  scroll-behavior: smooth;
+}
+
+.image-wrapper {
+  min-width: 250px;
+  flex-shrink: 0;
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.carousel-image {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  display: block;
+}

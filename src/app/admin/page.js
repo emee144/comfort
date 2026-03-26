@@ -24,7 +24,6 @@ const Pill = ({ status }) => {
   );
 };
 
-// ── Password Gate ─────────────────────────────────────────────────────────────
 function PasswordGate({ onUnlock }) {
   const [password, setPassword] = useState("");
   const [error, setError]       = useState("");
@@ -54,7 +53,6 @@ function PasswordGate({ onUnlock }) {
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4">
       <div className="w-full max-w-sm">
-        {/* Logo */}
         <div className="text-center mb-10">
           <div className="w-14 h-14 rounded-2xl bg-[#C9A84C]/10 border border-[#C9A84C]/20 flex items-center justify-center mx-auto mb-5">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C9A84C" strokeWidth="1.5">
@@ -66,11 +64,10 @@ function PasswordGate({ onUnlock }) {
             Admin <span className="text-[#C9A84C]">Access</span>
           </h1>
           <p className="text-white/40 text-xs tracking-widest uppercase mt-2">
-            Comfort Serene Apartment
+            Comfort Service Apartment
           </p>
         </div>
 
-        {/* Form */}
         <div className="bg-[#0f0f0f] border border-white/8 rounded-2xl p-7 space-y-4">
           <div>
             <label className="block text-[10px] tracking-[0.15em] uppercase text-white/40 mb-2">
@@ -122,7 +119,6 @@ function PasswordGate({ onUnlock }) {
   );
 }
 
-// ── Confirm Modal ─────────────────────────────────────────────────────────────
 function ConfirmModal({ booking, action, onConfirm, onCancel, loading }) {
   const isConfirm = action === "confirm";
   return (
@@ -171,7 +167,6 @@ function ConfirmModal({ booking, action, onConfirm, onCancel, loading }) {
   );
 }
 
-// ── Booking Card ──────────────────────────────────────────────────────────────
 function BookingCard({ booking, onAction }) {
   const [expanded, setExpanded] = useState(false);
   const n = nights(booking.checkIn, booking.checkOut);
@@ -235,9 +230,9 @@ function BookingCard({ booking, onAction }) {
         <div className="border-t border-white/5 px-5 py-4 grid grid-cols-2 md:grid-cols-4 gap-4">
           {[
             ["Phone",     booking.phone],
-            ["Guests",    `${booking.guests} guest(s)`],
+            ["Email",     booking.email || "—"],
+            ["Units",     booking.units ?? "—"],
             ["Submitted", fmt(booking.createdAt)],
-            ["Ref",       booking.transferReference || "—"],
           ].map(([l, v]) => (
             <div key={l}>
               <div className="text-[9px] tracking-[0.2em] uppercase text-white/30 mb-1">{l}</div>
@@ -250,7 +245,6 @@ function BookingCard({ booking, onAction }) {
   );
 }
 
-// ── Stats Bar ─────────────────────────────────────────────────────────────────
 function StatsBar({ bookings }) {
   const total     = bookings.length;
   const awaiting  = bookings.filter((b) => b.status === "awaiting_confirmation").length;
@@ -276,7 +270,6 @@ function StatsBar({ bookings }) {
   );
 }
 
-// ── Main Admin Page ───────────────────────────────────────────────────────────
 export default function AdminPage() {
   const [unlocked, setUnlocked]     = useState(false);
   const [bookings, setBookings]     = useState([]);
@@ -296,7 +289,7 @@ export default function AdminPage() {
   const fetchBookings = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/bookings");
+      const res = await fetch("/api/auth/admin/bookings");
       const contentType = res.headers.get("content-type") || "";
       if (!contentType.includes("application/json")) {
         console.error("Non-JSON response:", res.status);
@@ -325,12 +318,12 @@ export default function AdminPage() {
   const handleConfirmAction = async () => {
     setActing(true);
     try {
-      const res = await fetch("/api/auth/bookings", {
+      const res = await fetch("/api/auth/admin/bookings", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           bookingId: modal.booking._id,
-          action:    modal.action, // "confirm" or "reject"
+          action:    modal.action,
         }),
       });
       const data = await res.json();
@@ -375,13 +368,11 @@ export default function AdminPage() {
     { key: "rejected",              label: "Rejected" },
   ];
 
-  // Show password gate first
   if (!unlocked) return <PasswordGate onUnlock={() => setUnlocked(true)} />;
 
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white">
 
-      {/* Toast */}
       {toast && (
         <div className={`fixed top-6 right-6 z-[60] px-5 py-3 rounded-xl text-sm font-medium shadow-2xl border
           ${toast.type === "success"
@@ -391,14 +382,13 @@ export default function AdminPage() {
         </div>
       )}
 
-      {/* Header */}
       <div className="border-b border-white/5 px-8 md:px-16 py-5 flex items-center justify-between">
         <div>
           <h1 className="font-playfair text-lg font-semibold text-white">
             Admin <span className="text-[#C9A84C]">Panel</span>
           </h1>
           <p className="text-white/50 text-[11px] tracking-wide mt-0.5">
-            Comfort Serene Apartment · Booking Management
+            Comfort Service Apartment · Booking Management
           </p>
         </div>
         <button
@@ -427,7 +417,6 @@ export default function AdminPage() {
 
         {!loading && <StatsBar bookings={bookings} />}
 
-        {/* Filters + Search */}
         <div className="flex flex-col md:flex-row gap-3 mb-6">
           <div className="flex gap-1 bg-[#0f0f0f] border border-white/8 rounded-xl p-1">
             {FILTERS.map(({ key, label }) => (
@@ -470,7 +459,6 @@ export default function AdminPage() {
           </button>
         </div>
 
-        {/* Bookings List */}
         {loading ? (
           <div className="text-center py-24 text-white/30 text-sm tracking-widest uppercase">Loading…</div>
         ) : filtered.length === 0 ? (

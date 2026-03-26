@@ -61,7 +61,7 @@ export default function SignupPage() {
         return
       }
 
-      router.push('/login?registered=true')
+      router.push('/booking?registered=true')
 
     } catch {
       setError('Something went wrong. Please try again.')

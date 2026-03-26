@@ -3,103 +3,125 @@ import { getCurrentUser } from "@/lib/auth";
 import { connectDB } from "@/lib/mongodb";
 import Booking from "@/models/Booking";
 
-export async function GET() {
+const BOOKING_HOLD_MINUTES = 15;
+
+// ================= GET =================
+export async function GET(req) {
   try {
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
     await connectDB();
-    let bookings;
-    if (user.isAdmin === true || user.role === "admin") {
-      bookings = await Booking.find({}).sort({ createdAt: -1 }).lean();
-    } else {
-      bookings = await Booking.find({ userId: user._id }).sort({ createdAt: -1 }).lean();
-    }
+
+    const now = new Date();
+    await Booking.updateMany(
+      {
+        paymentStatus: "pending",
+        createdAt: { $lt: new Date(now - BOOKING_HOLD_MINUTES * 60 * 1000) },
+      },
+      {
+        status: "expired",
+        paymentStatus: "expired",
+      }
+    );
+
+    const bookings = await Booking.find({ userId: user._id }).sort({ createdAt: -1 }).lean();
+
     return NextResponse.json({ bookings });
+
   } catch (err) {
-    console.error("GET /api/auth/bookings error:", err);
+    console.error("GET error:", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }
 
+// ================= POST =================
 export async function POST(req) {
   try {
     const user = await getCurrentUser();
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    await connectDB();
-    const body = await req.json();
-    const { name, phone, roomType, checkIn, checkOut, guests, amount, transferReference } = body;
 
-    if (!name || !phone || !roomType || !checkIn || !checkOut || !guests || !amount) {
+    await connectDB();
+
+    const body = await req.json();
+    const { name, phone, roomType, units, checkIn, checkOut, amount } = body;
+
+    if (!name || !phone || !roomType || !checkIn || !checkOut || !amount || !units) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const now          = new Date();
-    const checkInDate  = new Date(checkIn);
+    const now = new Date();
+    const checkInDate = new Date(checkIn);
     const checkOutDate = new Date(checkOut);
 
-    if (isNaN(checkInDate.getTime()) || isNaN(checkOutDate.getTime())) {
-      return NextResponse.json({ error: "Invalid date format" }, { status: 400 });
+    if (isNaN(checkInDate) || isNaN(checkOutDate)) {
+      return NextResponse.json({ error: "Invalid date" }, { status: 400 });
     }
 
-    // Strip time — compare dates only
-    const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     const checkInMidnight = new Date(checkInDate.getFullYear(), checkInDate.getMonth(), checkInDate.getDate());
 
-    if (checkInMidnight < todayMidnight) {
-      return NextResponse.json({ error: "Check-in date cannot be in the past" }, { status: 400 });
+    if (checkInMidnight < today) {
+      return NextResponse.json({ error: "Check-in cannot be in the past" }, { status: 400 });
     }
 
     if (checkOutDate <= checkInDate) {
-      return NextResponse.json({ error: "Check-out date must be after check-in date" }, { status: 400 });
+      return NextResponse.json({ error: "Invalid date range" }, { status: 400 });
+    }
+
+    const bookedBookings = await Booking.find({
+      roomType,
+      status: { $in: ["confirmed", "awaiting_confirmation"] },
+      checkIn: { $lt: checkOutDate },
+      checkOut: { $gt: checkInDate },
+    }).lean();
+
+    const dayUnits = {};
+    for (let d = new Date(checkInDate); d < checkOutDate; d.setDate(d.getDate() + 1)) {
+      dayUnits[d.toDateString()] = 0;
+    }
+
+    bookedBookings.forEach(b => {
+      for (let d = new Date(b.checkIn); d < b.checkOut; d.setDate(d.getDate() + 1)) {
+        const key = d.toDateString();
+        if (dayUnits[key] !== undefined) {
+          dayUnits[key] += b.units || 1;
+        }
+      }
+    });
+
+    const TOTAL_UNITS = { "2-bedroom": 4, selfcontain: 1 };
+
+    for (const dateStr in dayUnits) {
+      if ((dayUnits[dateStr] + units) > TOTAL_UNITS[roomType]) {
+        return NextResponse.json({
+          error: `Not enough ${roomType === "2-bedroom" ? "2 Bedroom" : "Self Contain"} units available for ${dateStr}`
+        }, { status: 409 });
+      }
     }
 
     const booking = await Booking.create({
-      userId:            user._id,
+      userId: user._id,
       name,
       phone,
+      email: user.email || "",
       roomType,
-      checkIn:           checkInDate,
-      checkOut:          checkOutDate,
-      guests,
+      units,
+      checkIn: checkInDate,
+      checkOut: checkOutDate,
       amount,
-      transferReference: transferReference || "",
-      paymentStatus:     "pending",
-      status:            "awaiting_confirmation",
+      paymentStatus: "pending",
+      status: "awaiting_confirmation",
     });
 
     return NextResponse.json({ booking }, { status: 201 });
-  } catch (err) {
-    console.error("POST /api/auth/bookings error:", err);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
-  }
-}
 
-export async function PATCH(req) {
-  try {
-    const user = await getCurrentUser();
-    if (!user || (user.isAdmin !== true && user.role !== "admin")) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
-    const { bookingId, action } = await req.json();
-    if (!bookingId || !["confirm", "reject"].includes(action)) {
-      return NextResponse.json({ error: "Invalid request" }, { status: 400 });
-    }
-    const update =
-      action === "confirm"
-        ? { paymentStatus: "confirmed", status: "confirmed" }
-        : { paymentStatus: "rejected", status: "rejected" };
-    await connectDB();
-    const booking = await Booking.findByIdAndUpdate(bookingId, update, { new: true });
-    if (!booking) {
-      return NextResponse.json({ error: "Booking not found" }, { status: 404 });
-    }
-    return NextResponse.json({ booking });
   } catch (err) {
-    console.error("PATCH /api/auth/bookings error:", err);
+    console.error("POST error:", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

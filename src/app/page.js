@@ -142,7 +142,7 @@ const galleryImages = [
           ))}
         </ul>
 
-       <a href="/login" className="btn-gold text-[10px] px-3 py-1.5 ml-8">
+       <a href="/signup" className="btn-gold text-[10px] px-3 py-1.5 ml-8">
   Book Now
 </a>
       </nav>
@@ -446,7 +446,7 @@ const galleryImages = [
           </div>
         </div>
 
-        <Link href="/login">
+        <Link href="/signup">
   <button className="btn-gold w-full text-center py-5 cursor-pointer">
     Proceed with Bank Transfer →
   </button>
@@ -460,41 +460,71 @@ const galleryImages = [
   </div>
 </section>
       {/* ══════════════ LOCATION ══════════════ */}
-      <section id="location" className="py-28 px-6 md:px-16 bg-[#0f0f0f]"
-        data-section="location" ref={ref('location')}>
-        <div className={`max-w-6xl mx-auto transition-all duration-1000 ${reveal('location')}`}>
+      <section
+  id="location"
+  className="py-28 px-6 md:px-16 bg-[#0f0f0f]"
+  data-section="location"
+  ref={ref('location')}
+>
+  <div className={`max-w-6xl mx-auto transition-all duration-1000 ${reveal('location')}`}>
 
-          <div className="text-center mb-14">
-            <div className="section-label justify-center">Find Us</div>
-            <h2 className="font-playfair text-4xl md:text-5xl font-normal">
-              Our <em className="text-[#C9A84C]">Location</em>
-            </h2>
-          </div>
+    {/* Header */}
+    <div className="text-center mb-14">
+      <div className="section-label justify-center">Find Us</div>
+      <h2 className="font-playfair text-4xl md:text-5xl font-normal">
+        Our <em className="text-[#C9A84C]">Location</em>
+      </h2>
+      <p className="text-white/50 mt-4 text-sm md:text-base max-w-xl mx-auto">
+        Conveniently located in Elebu, Ibadan, with easy access to major roads,
+        essential services, and nearby attractions.
+      </p>
+    </div>
 
-          <div className="overflow-hidden h-96 border border-white/10 rounded-lg">
-            <iframe
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d253682.45068989!2d3.7383!3d7.3775!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x10398d00acdb6f79%3A0xa1d97a16bc98da27!2sIbadan%2C%20Oyo%20State!5e0!3m2!1sen!2sng"
-              className="w-full h-full border-0 grayscale"
-              allowFullScreen
-              loading="lazy"
-            />
-          </div>
+    {/* Map */}
+    <div className="overflow-hidden h-96 border border-white/10 rounded-lg">
+      <iframe
+        src="https://www.google.com/maps?q=7.348416,3.832415&z=15&output=embed"
+        className="w-full h-full border-0 grayscale"
+        allowFullScreen
+        loading="lazy"
+      />
+    </div>
 
-          <div className="flex flex-wrap justify-center gap-4 mt-8">
-            {[
-              { icon: '📍', text: 'Ibadan, Oyo State' },
-              { icon: '🚗', text: 'Easy Road Access' },
-              { icon: '🏪', text: 'Close to Shops' },
-              { icon: '🏥', text: 'Near Hospital' },
-            ].map(t => (
-              <div key={t.text}
-                className="flex items-center gap-2 border border-white/10 px-6 py-3 text-xs text-white/50 hover:border-[#C9A84C]/40 hover:text-white/70 transition-all rounded">
-                <span>{t.icon}</span> {t.text}
-              </div>
-            ))}
-          </div>
+    {/* Address + Directions */}
+    <div className="text-center mt-8">
+      <p className="text-white/70 text-sm md:text-base">
+        No 3, Orire Estate, Ladipo Street, Akuru Complex, Elebu, Ibadan, Oyo State
+      </p>
+
+      <a
+        href="https://www.google.com/maps/dir/?api=1&destination=7.348416,3.832415"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-block mt-4 px-6 py-3 text-sm bg-[#C9A84C] text-black rounded hover:bg-[#b8963f] transition"
+      >
+        Get Directions
+      </a>
+    </div>
+
+    {/* Features */}
+    <div className="flex flex-wrap justify-center gap-4 mt-10">
+      {[
+        { icon: '📍', text: 'Elebu, Ibadan' },
+        { icon: '🚗', text: 'Easy Road Access' },
+        { icon: '🏪', text: 'Close to Shops & Markets' },
+        { icon: '🏥', text: 'Near Healthcare Facilities' },
+      ].map((t) => (
+        <div
+          key={t.text}
+          className="flex items-center gap-2 border border-white/10 px-6 py-3 text-xs text-white/50 hover:border-[#C9A84C]/40 hover:text-white/70 transition-all rounded"
+        >
+          <span>{t.icon}</span> {t.text}
         </div>
-      </section>
+      ))}
+    </div>
+
+  </div>
+</section>
 
       {/* ══════════════ REVIEWS ══════════════ */}
     <section

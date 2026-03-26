@@ -1,45 +1,63 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
 
+import { useState, useEffect, useRef } from "react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import BookingPicture from "../components/BookingPicture";
 const RATES = { "2-bedroom": 100000, selfcontain: 70000 };
+const TOTAL_UNITS = { "2-bedroom": 4, selfcontain: 1 };
 
 const fmt = (d) =>
   d ? new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "—";
 
-const nights = (ci, co) => {
-  if (!ci || !co) return 0;
-  return Math.max(0, Math.round((new Date(co) - new Date(ci)) / 86400000));
+const nights = (checkIn, checkOut) =>
+  checkIn && checkOut ? Math.max(0, Math.round((new Date(checkOut) - new Date(checkIn)) / 86400000)) : 0;
+
+// Get total booked units per day for a room type
+const getBookedUnitsPerDay = (bookings, roomType) => {
+  const map = {};
+  bookings
+    .filter(b => b.roomType === roomType)
+    .forEach(b => {
+      let d = new Date(b.checkIn);
+      const end = new Date(b.checkOut);
+      while (d < end) {
+        const key = d.toDateString();
+        map[key] = (map[key] || 0) + (b.units || 1);
+        d.setDate(d.getDate() + 1);
+      }
+    });
+  return map;
 };
 
-const isDateRangeUnavailable = (checkIn, checkOut, roomType, bookedDates) => {
-  if (!checkIn || !checkOut || !roomType) return false;
-  const newStart = new Date(checkIn);
-  const newEnd = new Date(checkOut);
-
-  return bookedDates.some(({ checkIn: bIn, checkOut: bOut, roomType: bRoom }) => {
-    if (bRoom !== roomType) return false;
-    const bStart = new Date(bIn);
-    const bEnd = new Date(bOut);
-    return newStart < bEnd && newEnd > bStart;
-  });
+const isDateFullyBooked = (date, roomType, bookings, requestedUnits = 1) => {
+  if (!roomType) return false;
+  const map = getBookedUnitsPerDay(bookings, roomType);
+  const key = date.toDateString();
+  return (map[key] || 0) + requestedUnits > TOTAL_UNITS[roomType];
 };
 
-const getBookedDateRanges = (bookedDates, roomType) => {
-  return bookedDates
-    .filter((b) => b.roomType === roomType && b.status !== "rejected")
-    .map((b) => ({ start: b.checkIn, end: b.checkOut }));
+const isRangeAvailable = (start, end, roomType, bookings, requestedUnits = 1) => {
+  if (!start || !end || !roomType) return true;
+  let d = new Date(start);
+  while (d < end) {
+    if (isDateFullyBooked(d, roomType, bookings, requestedUnits)) return false;
+    d.setDate(d.getDate() + 1);
+  }
+  return true;
 };
 
 const statusPill = (status) => {
-  const map = {
-    awaiting_confirmation: { label: "Awaiting Confirmation", cls: "bg-amber-500/15 text-amber-400 border border-amber-500/30" },
-    confirmed:             { label: "Confirmed ✓",           cls: "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30" },
-    rejected:              { label: "Rejected",              cls: "bg-red-500/15 text-red-400 border border-red-500/30" },
-  };
-  const s = map[status] || { label: status, cls: "bg-white/10 text-white/50" };
+  let bg = "", text = "";
+  switch (status) {
+    case "awaiting_confirmation": bg = "bg-yellow-500/20"; text = "Awaiting"; break;
+    case "confirmed": bg = "bg-green-500/20"; text = "Confirmed"; break;
+    case "rejected": bg = "bg-red-500/20"; text = "Rejected"; break;
+    default: bg = "bg-gray-500/20"; text = status;
+  }
   return (
-    <span className={`text-[10px] tracking-widest uppercase px-3 py-1 rounded-full font-medium ${s.cls}`}>
-      {s.label}
+    <span className={`${bg} text-white text-xs font-semibold px-2 py-0.5 rounded-full`}>
+      {text}
     </span>
   );
 };
@@ -100,10 +118,7 @@ function Receipt({ booking, onClose }) {
 
             <div className="mb-6">
               <div className="text-[9px] tracking-[0.2em] uppercase text-white/30 mb-3">Guest Information</div>
-              {[
-                ["Name",  booking.name],
-                ["Phone", booking.phone],
-              ].map(([l, v]) => (
+              {[["Name", booking.name], ["Phone", booking.phone]].map(([l, v]) => (
                 <div key={l} className="flex justify-between py-2 border-b border-white/5 text-sm">
                   <span className="text-white/50">{l}</span>
                   <span className="font-medium text-white">{v}</span>
@@ -115,10 +130,10 @@ function Receipt({ booking, onClose }) {
               <div className="text-[9px] tracking-[0.2em] uppercase text-white/30 mb-3">Stay Details</div>
               {[
                 ["Room Type", booking.roomType === "2-bedroom" ? "2 Bedroom" : "Self Contain"],
-                ["Check-in",  fmt(booking.checkIn)],
+                ["Units", booking.units],
+                ["Check-in", fmt(booking.checkIn)],
                 ["Check-out", fmt(booking.checkOut)],
-                ["Guests",    booking.guests],
-                ["Duration",  `${nights(booking.checkIn, booking.checkOut)} night(s)`],
+                ["Duration", `${nights(booking.checkIn, booking.checkOut)} night(s)`],
               ].map(([l, v]) => (
                 <div key={l} className="flex justify-between py-2 border-b border-white/5 text-sm">
                   <span className="text-white/50">{l}</span>
@@ -132,11 +147,6 @@ function Receipt({ booking, onClose }) {
                 <span className="text-white/60 text-sm">Total Amount Paid</span>
                 <span className="text-[#C9A84C] text-xl font-semibold">₦{Number(booking.amount).toLocaleString()}</span>
               </div>
-              {booking.transferReference && (
-                <div className="mt-2 text-[11px] text-white/30">
-                  Transfer Ref: <span className="text-white/50 font-medium">{booking.transferReference}</span>
-                </div>
-              )}
             </div>
 
             <div className="text-center text-[10px] text-white/20 mt-6 border-t border-white/5 pt-4">
@@ -160,43 +170,58 @@ function Receipt({ booking, onClose }) {
   );
 }
 
-function BookingForm({ onBooked, allBookings }) {
+function BookingForm({ onBooked }) {
+  const today = new Date();
   const [step, setStep] = useState(1);
+  const [publicBookings, setPublicBookings] = useState([]);
   const [form, setForm] = useState({
-    name: "", phone: "", roomType: "", checkIn: "", checkOut: "", guests: 1, transferReference: "",
+    name: "", phone: "", roomType: "", units: 1, checkIn: null, checkOut: null,
   });
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
   const [availabilityError, setAvailabilityError] = useState("");
 
-  const set = (k) => (e) => {
-    setForm((p) => ({ ...p, [k]: e.target.value }));
-    setAvailabilityError("");
+  // Fetch availability on mount
+  useEffect(() => {
+    fetch("/api/auth/bookings/calendar")
+      .then(r => r.json())
+      .then(d => setPublicBookings(d.bookings || []))
+      .catch(() => {});
+  }, []);
+
+  const setField = (k) => (e) => {
+    const value = e.target ? e.target.value : e;
+    setForm(p => ({ ...p, [k]: value }));
   };
 
   const n = nights(form.checkIn, form.checkOut);
   const rate = RATES[form.roomType] || 0;
-  const amount = n * rate;
-
-  const today = new Date().toISOString().split("T")[0];
+  const amount = n * rate * (form.units || 1);
 
   const checkAvailability = () => {
     if (!form.checkIn || !form.checkOut || !form.roomType) return true;
-    const conflicts = isDateRangeUnavailable(form.checkIn, form.checkOut, form.roomType, allBookings);
-    if (conflicts) {
-      const room = form.roomType === "2-bedroom" ? "2 Bedroom" : "Self Contain";
-      setAvailabilityError(
-        `The ${room} is already booked for some or all of the selected dates. Please choose different dates.`
-      );
+    if (!isRangeAvailable(form.checkIn, form.checkOut, form.roomType, publicBookings, Number(form.units))) {
+      setAvailabilityError("Selected dates are not available for the units requested.");
       return false;
     }
     setAvailabilityError("");
     return true;
   };
 
-  const submitBooking = async () => {
+  const handleNextToPayment = () => {
+    if (!form.name || !form.phone || !form.roomType || !form.units || !form.checkIn || !form.checkOut) {
+      return setError("Please fill all fields.");
+    }
     if (!checkAvailability()) return;
-    setLoading(true);
+    setError("");
+    setStep(2);
+  };
+
+  const handleNextToConfirm = () => {
+    setError("");
+    setStep(3);
+  };
+
+  const handleSubmit = async () => {
     setError("");
     try {
       const res = await fetch("/api/auth/bookings", {
@@ -205,182 +230,241 @@ function BookingForm({ onBooked, allBookings }) {
         body: JSON.stringify({ ...form, amount }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed");
-      setStep(3);
+      if (!res.ok) {
+        if (res.status === 409 || data.error?.toLowerCase().includes("units") || data.error?.toLowerCase().includes("available")) {
+          setStep(1);
+          setAvailabilityError(data.error);
+        } else {
+          setError(data.error || "Booking failed");
+        }
+        return;
+      }
       onBooked?.();
+      setForm({ name: "", phone: "", roomType: "", units: 1, checkIn: null, checkOut: null });
+      setStep(1);
     } catch (e) {
       setError(e.message);
-    } finally {
-      setLoading(false);
     }
   };
 
-  const inputCls = "w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/30 focus:outline-none focus:border-[#C9A84C]/60 transition-colors";
-  const labelCls = "block text-[10px] tracking-[0.15em] uppercase text-white/50 mb-2";
+  // Get fully blocked dates for check-in picker
+  const getBlockedCheckInDates = () => {
+    if (!form.roomType) return [];
+    const map = getBookedUnitsPerDay(publicBookings, form.roomType);
+    return Object.entries(map)
+      .filter(([, count]) => count + Number(form.units) > TOTAL_UNITS[form.roomType])
+      .map(([dateStr]) => new Date(dateStr));
+  };
 
-  const bookedRangesForRoom = form.roomType
-    ? getBookedDateRanges(allBookings, form.roomType)
-    : [];
+  // Get unavailable checkout dates given a selected check-in
+  const getBlockedCheckOutDates = () => {
+    if (!form.checkIn || !form.roomType) return [];
+    const unavailable = [];
+    const maxCheck = new Date(form.checkIn);
+    maxCheck.setMonth(maxCheck.getMonth() + 12);
+    for (let d = new Date(form.checkIn); d <= maxCheck; d.setDate(d.getDate() + 1)) {
+      if (!isRangeAvailable(form.checkIn, d, form.roomType, publicBookings, Number(form.units))) {
+        unavailable.push(new Date(d));
+      }
+    }
+    return unavailable;
+  };
+
+  const StepIndicator = () => (
+    <div className="flex items-center gap-2 mb-6">
+      {[1, 2, 3].map((s) => (
+        <div key={s} className="flex items-center gap-2">
+          <div className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-bold border transition-all
+            ${step === s
+              ? "bg-[#C9A84C] border-[#C9A84C] text-black"
+              : step > s
+              ? "bg-[#C9A84C]/20 border-[#C9A84C]/40 text-[#C9A84C]"
+              : "bg-white/5 border-white/10 text-white/30"}`}>
+            {step > s ? "✓" : s}
+          </div>
+          <span className={`text-[10px] tracking-widest uppercase hidden md:inline
+            ${step === s ? "text-[#C9A84C]" : step > s ? "text-[#C9A84C]/60" : "text-white/20"}`}>
+            {s === 1 ? "Booking Details" : s === 2 ? "Payment" : "Confirm"}
+          </span>
+          {s < 3 && <div className={`w-8 h-px mx-1 ${step > s ? "bg-[#C9A84C]/40" : "bg-white/10"}`} />}
+        </div>
+      ))}
+    </div>
+  );
 
   return (
-    <div className="bg-[#0f0f0f] border border-white/8 rounded-2xl p-8">
-      <h2 className="font-playfair text-xl font-semibold text-white mb-1">
+    <div className="bg-[#0f0f0f] border border-white/8 rounded-2xl p-8 max-w-4xl mx-auto space-y-5">
+      <h2 className="font-playfair text-xl font-semibold text-white mb-2">
         New <span className="text-[#C9A84C]">Booking</span>
       </h2>
-      <p className="text-white/40 text-xs tracking-wide mb-8">Complete the form below to reserve your stay</p>
 
-      <div className="flex items-center gap-3 mb-8">
-        {["Your Details", "Bank Transfer", "Submitted"].map((s, i) => (
-          <div key={s} className="flex items-center gap-2">
-            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all
-              ${step > i + 1 ? "bg-[#C9A84C] text-black" : step === i + 1 ? "bg-[#C9A84C]/20 border border-[#C9A84C] text-[#C9A84C]" : "bg-white/5 border border-white/10 text-white/20"}`}>
-              {step > i + 1 ? "✓" : i + 1}
-            </div>
-            <span className={`text-[10px] tracking-wide uppercase ${step === i + 1 ? "text-white/80" : "text-white/20"}`}>{s}</span>
-            {i < 2 && <div className={`h-px w-8 ${step > i + 1 ? "bg-[#C9A84C]/40" : "bg-white/10"}`} />}
-          </div>
-        ))}
-      </div>
+      <StepIndicator />
 
+      {/* ── STEP 1: Booking Details ── */}
       {step === 1 && (
-        <div className="space-y-5">
+        <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
-              <label className={labelCls}>Full Name</label>
-              <input className={inputCls} placeholder="John Doe" value={form.name} onChange={set("name")} />
+              <label className="block text-[10px] text-white/50 mb-1">Full Name</label>
+              <input className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white"
+                value={form.name} onChange={setField("name")} />
             </div>
             <div>
-              <label className={labelCls}>Phone Number</label>
-              <input className={inputCls} placeholder="+234 800 000 0000" value={form.phone} onChange={set("phone")} />
+              <label className="block text-[10px] text-white/50 mb-1">Phone Number</label>
+              <input className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white"
+                 value={form.phone} onChange={setField("phone")} />
             </div>
             <div>
-              <label className={labelCls}>Room Type</label>
-              <select className={inputCls} value={form.roomType} onChange={set("roomType")}>
-                <option value="" disabled>Select a room</option>
-                <option value="2-bedroom">2 Bedroom — ₦{RATES["2-bedroom"].toLocaleString()}/night</option>
-                <option value="selfcontain">Self Contain — ₦{RATES["selfcontain"].toLocaleString()}/night</option>
+              <label className="block text-[10px] text-white/50 mb-1">Room Type</label>
+              <select className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white"
+                value={form.roomType} onChange={setField("roomType")}>
+                <option value="">Select a room</option>
+                <option value="2-bedroom">2 Bedroom — ₦100,000/night</option>
+                <option value="selfcontain">Self Contain — ₦70,000/night</option>
               </select>
             </div>
+            {form.roomType && (
+              <div>
+                <label className="block text-[10px] text-white/50 mb-1">Units</label>
+                <input type="number" min={1} max={TOTAL_UNITS[form.roomType]} value={form.units}
+                  onChange={setField("units")}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white" />
+              </div>
+            )}
             <div>
-              <label className={labelCls}>No. of Guests</label>
-              <input className={inputCls} type="number" min={1} max={10} value={form.guests} onChange={set("guests")} />
+              <label className="block text-[10px] text-white/50 mb-1">Check-in</label>
+              <DatePicker
+                selected={form.checkIn}
+                onChange={(d) => setForm(p => ({ ...p, checkIn: d, checkOut: null }))}
+                minDate={today}
+                placeholderText="Select check-in"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white"
+                excludeDates={getBlockedCheckInDates()}
+              />
             </div>
             <div>
-              <label className={labelCls}>Check-in Date</label>
-              <input className={inputCls} type="date" min={today} value={form.checkIn}
-                onChange={(e) => { setForm((p) => ({ ...p, checkIn: e.target.value, checkOut: "" })); setAvailabilityError(""); }} />
-            </div>
-            <div>
-              <label className={labelCls}>Check-out Date</label>
-              <input className={inputCls} type="date" min={form.checkIn || today} value={form.checkOut}
-                onChange={(e) => { set("checkOut")(e); setAvailabilityError(""); }} />
+              <label className="block text-[10px] text-white/50 mb-1">Check-out</label>
+              <DatePicker
+                selected={form.checkOut}
+                onChange={(d) => setForm(p => ({ ...p, checkOut: d }))}
+                minDate={form.checkIn ? new Date(new Date(form.checkIn).getTime() + 86400000) : today}
+                placeholderText="Select check-out"
+                className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white"
+                excludeDates={getBlockedCheckOutDates()}
+              />
             </div>
           </div>
 
-          {form.roomType && bookedRangesForRoom.length > 0 && (
-            <div className="bg-amber-500/5 border border-amber-500/20 rounded-xl p-4">
-              <div className="text-[9px] tracking-[0.2em] uppercase text-amber-400/70 mb-2">
-                Already Booked Dates for {form.roomType === "2-bedroom" ? "2 Bedroom" : "Self Contain"}
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {bookedRangesForRoom.map((r, i) => (
-                  <span key={i} className="text-[11px] text-amber-300/70 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-1">
-                    {fmt(r.start)} → {fmt(r.end)}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {availabilityError && (
-            <div className="bg-red-500/10 border border-red-500/25 rounded-xl p-4 flex items-start gap-3">
-              <span className="text-red-400 text-lg mt-0.5">⚠</span>
-              <p className="text-red-300 text-xs leading-relaxed">{availabilityError}</p>
-            </div>
-          )}
+          {availabilityError && <p className="text-red-400 text-xs">{availabilityError}</p>}
+          {error && <p className="text-red-400 text-xs">{error}</p>}
 
           {amount > 0 && !availabilityError && (
             <div className="bg-[#C9A84C]/5 border border-[#C9A84C]/20 rounded-xl p-4 flex justify-between items-center">
-              <div>
-                <div className="text-[10px] uppercase tracking-widest text-white/40">Total Amount</div>
-                <div className="text-[#C9A84C] text-lg font-semibold mt-1">₦{amount.toLocaleString()}</div>
-              </div>
-              <div className="text-right text-xs text-white/40">
-                {n} night(s) × ₦{rate.toLocaleString()}
-              </div>
+              <span className="text-white/40 text-[10px]">Total Amount</span>
+              <span className="text-[#C9A84C] font-semibold">₦{amount.toLocaleString()}</span>
             </div>
           )}
 
-          <button
-            onClick={() => {
-  if (!form.name || !form.phone || !form.roomType || !form.checkIn || !form.checkOut)
-    return setError("Please fill all fields.");
-  if (new Date(form.checkIn) < new Date(today))
-    return setError("Check-in date cannot be in the past.");
-  if (amount <= 0) return setError("Select valid check-in and check-out dates.");
-  if (!checkAvailability()) return;
-  setError("");
-  setStep(2);
-}}
-            className="w-full bg-[#C9A84C] hover:bg-[#b8943e] text-black text-[11px] tracking-widest uppercase font-bold py-4 rounded-xl transition-colors mt-2">
+          {/* Unavailable dates summary */}
+          {form.roomType && (() => {
+            const blocked = getBlockedCheckInDates();
+            if (!blocked.length) return null;
+            return (
+              <div className="bg-red-500/10 border border-red-500/25 rounded-xl p-4">
+                <p className="text-red-400 text-[10px] uppercase mb-2">Unavailable Dates</p>
+                <div className="flex flex-wrap gap-1">
+                  {blocked.map((date, i) => (
+                    <span key={i} className="text-red-500 text-[11px] bg-red-100/10 border border-red-500/20 rounded-lg px-2 py-1">
+                      {fmt(date)}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
+          <button onClick={handleNextToPayment}
+            className="w-full bg-[#C9A84C] hover:bg-[#b8943e] text-black text-[11px] font-bold py-4 rounded-xl mt-2">
             Continue to Payment →
           </button>
-          {error && <p className="text-red-400 text-xs text-center mt-2">{error}</p>}
-        </div>
+        </>
       )}
 
+      {/* ── STEP 2: Payment Info ── */}
       {step === 2 && (
-        <div className="space-y-6">
-          <div className="bg-[#C9A84C]/5 border border-[#C9A84C]/30 rounded-2xl p-6">
-            <div className="text-[9px] tracking-[0.25em] uppercase text-[#C9A84C]/60 mb-4">Transfer Details</div>
-            <div className="space-y-3">
-              {[
-                ["Bank",           "First Bank"],
-                ["Account Name",   "Comfort Service Apartment"],
-                ["Account Number", "5326761655"],
-                ["Amount",         `₦${amount.toLocaleString()}`],
-              ].map(([l, v]) => (
-                <div key={l} className="flex justify-between text-sm">
-                  <span className="text-white/50">{l}</span>
-                  <span className={`font-semibold ${l === "Amount" ? "text-[#C9A84C]" : "text-white"}`}>{v}</span>
-                </div>
-              ))}
-            </div>
-            <p className="mt-4 pt-4 border-t border-white/5 text-[11px] text-white/40 leading-relaxed">
-              Transfer the exact amount above, then click{" "}
-              <span className="text-white/60">"I Have Made Transfer"</span>.
-            </p>
+        <>
+          <div className="bg-[#C9A84C]/5 border border-[#C9A84C]/20 rounded-xl p-5 space-y-3 mb-2">
+            <p className="text-[10px] tracking-widest uppercase text-[#C9A84C] mb-3">Transfer Details</p>
+            {[
+              ["Bank", "First Bank"],
+              ["Account Name", "Comfort Service Apartment"],
+              ["Account Number", "1234567890"],
+              ["Amount to Pay", `₦${amount.toLocaleString()}`],
+            ].map(([l, v]) => (
+              <div key={l} className="flex justify-between text-sm border-b border-white/5 pb-2">
+                <span className="text-white/40">{l}</span>
+                <span className="text-white font-medium">{v}</span>
+              </div>
+            ))}
           </div>
 
-          {error && <p className="text-red-400 text-xs text-center">{error}</p>}
+          <p className="text-white/40 text-xs leading-relaxed">
+            Please transfer the exact amount above to the account details provided, then click the button below once your transfer is complete.
+          </p>
+
+          {error && <p className="text-red-400 text-xs">{error}</p>}
 
           <div className="flex gap-3">
-            <button onClick={() => setStep(1)}
-              className="px-6 border border-white/10 hover:border-white/20 text-white/60 hover:text-white text-[11px] tracking-widest uppercase rounded-xl py-4 transition-colors">
+            <button onClick={() => { setStep(1); setError(""); }}
+              className="flex-1 border border-white/10 hover:border-white/20 text-white/60 text-[11px] tracking-widest uppercase py-4 rounded-xl transition-colors">
               ← Back
             </button>
-            <button onClick={submitBooking} disabled={loading}
-              className="flex-1 bg-[#C9A84C] hover:bg-[#b8943e] disabled:opacity-50 text-black text-[11px] tracking-widest uppercase font-bold py-4 rounded-xl transition-colors">
-              {loading ? "Submitting…" : "I Have Made Transfer ✓"}
+            <button onClick={handleNextToConfirm}
+              className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-bold py-4 rounded-xl tracking-widest uppercase transition-colors cursor-pointer">
+              ✓ I Have Made the Transfer
             </button>
           </div>
-        </div>
+        </>
       )}
 
+      {/* ── STEP 3: Confirm & Submit ── */}
       {step === 3 && (
-        <div className="text-center py-8">
-          <div className="w-16 h-16 bg-[#C9A84C]/10 border border-[#C9A84C]/30 rounded-full flex items-center justify-center text-2xl mx-auto mb-5">
-            ⏳
+        <>
+          <div className="space-y-3">
+            <p className="text-[10px] tracking-widest uppercase text-white/30 mb-3">Booking Summary</p>
+            {[
+              ["Name", form.name],
+              ["Phone", form.phone],
+              ["Room Type", form.roomType === "2-bedroom" ? "2 Bedroom" : "Self Contain"],
+              ["Units", form.units],
+              ["Check-in", fmt(form.checkIn)],
+              ["Check-out", fmt(form.checkOut)],
+              ["Duration", `${n} night(s)`],
+            ].map(([l, v]) => (
+              <div key={l} className="flex justify-between text-sm border-b border-white/5 pb-2">
+                <span className="text-white/40">{l}</span>
+                <span className="text-white font-medium">{v}</span>
+              </div>
+            ))}
+            <div className="flex justify-between items-center pt-2">
+              <span className="text-white/40 text-sm">Total Amount</span>
+              <span className="text-[#C9A84C] text-lg font-semibold">₦{amount.toLocaleString()}</span>
+            </div>
           </div>
-          <h3 className="font-playfair text-lg font-semibold text-white mb-2">Booking Submitted!</h3>
-          <p className="text-white/40 text-sm leading-relaxed max-w-xs mx-auto">
-            Your booking is awaiting payment confirmation. You'll be able to print your receipt once the admin confirms your transfer.
-          </p>
-          <button onClick={() => setStep(1)}
-            className="mt-6 border border-white/10 hover:border-[#C9A84C]/30 text-white/50 hover:text-white/80 text-[10px] tracking-widest uppercase px-6 py-3 rounded-xl transition-colors">
-            Make Another Booking
-          </button>
-        </div>
+
+          {error && <p className="text-red-400 text-xs">{error}</p>}
+
+          <div className="flex gap-3">
+            <button onClick={() => { setStep(2); setError(""); }}
+              className="flex-1 border border-white/10 hover:border-white/20 text-white/60 text-[11px] tracking-widest uppercase py-4 rounded-xl transition-colors cursor-pointer">
+              ← Back
+            </button>
+            <button onClick={handleSubmit}
+              className="flex-1 bg-[#C9A84C] hover:bg-[#b8943e] text-black text-[11px] font-bold py-4 rounded-xl cursor-pointer">
+              Confirm Booking ✓
+            </button>
+          </div>
+        </>
       )}
     </div>
   );
@@ -392,6 +476,7 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState("bookings");
   const [receipt, setReceipt] = useState(null);
   const [loggingOut, setLoggingOut] = useState(false);
+  const [user, setUser] = useState(null);
 
   const fetchBookings = async () => {
     setLoading(true);
@@ -405,8 +490,28 @@ export default function DashboardPage() {
       setLoading(false);
     }
   };
+const fetchUser = async () => {
+  try {
+    const res = await fetch("/api/auth/me", {
+      credentials: "include",
+    });
 
-  useEffect(() => { fetchBookings(); }, []);
+    console.log("STATUS:", res.status);
+
+    const data = await res.json();
+    console.log("DATA:", data);
+
+    if (!res.ok) {
+      console.log("NOT AUTHENTICATED");
+      return;
+    }
+
+    setUser(data.user);
+  } catch (e) {
+    console.error(e);
+  }
+};
+  useEffect(() => { fetchBookings(); fetchUser(); }, []);
 
   const handleLogout = async () => {
     setLoggingOut(true);
@@ -419,14 +524,14 @@ export default function DashboardPage() {
     }
   };
 
-  const activeBookings = bookings.filter((b) => b.status !== "rejected");
-
   return (
     <div className="min-h-screen bg-[#0a0a0a] text-white">
       <div className="border-b border-white/5 px-8 md:px-16 py-5 flex items-center justify-between">
         <div>
           <h1 className="font-playfair text-lg font-semibold text-white">
-            My <span className="text-[#C9A84C]">Dashboard</span>
+            Welcome, <span className="text-[#C9A84C]">
+  {user?.email ? user.email : "..."}
+</span>
           </h1>
           <p className="text-white/40 text-[11px] tracking-wide mt-0.5">Manage your bookings and reservations</p>
         </div>
@@ -468,12 +573,20 @@ export default function DashboardPage() {
       </div>
 
       <div className="px-8 md:px-16 py-10 max-w-5xl mx-auto">
-        {activeTab === "new" && (
-          <BookingForm
-            allBookings={activeBookings}
-            onBooked={() => { fetchBookings(); setActiveTab("bookings"); }}
-          />
-        )}
+       {activeTab === "new" && (
+  <div className="space-y-8">
+    {/* Apartment pictures */}
+    <BookingPicture />
+
+    {/* Booking form */}
+    <BookingForm
+      onBooked={() => {
+        fetchBookings();
+        setActiveTab("bookings");
+      }}
+    />
+  </div> 
+)}
 
         {activeTab === "bookings" && (
           <div>
@@ -498,7 +611,7 @@ export default function DashboardPage() {
                         {statusPill(b.status)}
                       </div>
                       <div className="text-white/40 text-xs">
-                        {b.roomType === "2-bedroom" ? "2 Bedroom" : "Self Contain"} · {fmt(b.checkIn)} → {fmt(b.checkOut)} · {nights(b.checkIn, b.checkOut)} night(s) · {b.guests} guest(s)
+                        {b.roomType === "2-bedroom" ? "2 Bedroom" : "Self Contain"} · {fmt(b.checkIn)} → {fmt(b.checkOut)} · {nights(b.checkIn, b.checkOut)} night(s) · {b.units} unit{b.units > 1 ? "s" : ""}
                       </div>
                       <div className="text-[#C9A84C] text-sm font-semibold">₦{Number(b.amount).toLocaleString()}</div>
                     </div>

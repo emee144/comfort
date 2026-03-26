@@ -3,7 +3,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { connectDB } from "@/lib/mongodb";
 import Booking from "@/models/Booking";
 
-// GET all bookings
+// GET all bookings (admin only)
 export async function GET() {
   try {
     const user = await getCurrentUser();
@@ -13,6 +13,8 @@ export async function GET() {
     }
 
     await connectDB();
+
+    // ✅ fetch ALL bookings, not just admin's own
     const bookings = await Booking.find({}).sort({ createdAt: -1 }).lean();
 
     return NextResponse.json({ bookings });
@@ -32,22 +34,22 @@ export async function PATCH(req) {
 
     const { bookingId, action } = await req.json();
 
-    if (!bookingId || !["confirm", "reject"].includes(action)) {
+    if (!bookingId || !["confirm", "reject", "revoke"].includes(action)) {
       return NextResponse.json({ error: "Invalid request" }, { status: 400 });
     }
 
-    const newStatus = action === "confirm" ? "confirmed" : "rejected";
+    let update;
+    if (action === "confirm") {
+      update = { paymentStatus: "confirmed", status: "confirmed" };
+    } else if (action === "reject") {
+      update = { paymentStatus: "rejected", status: "rejected" };
+    } else {
+      update = { paymentStatus: "revoked", status: "revoked" };
+    }
 
     await connectDB();
 
-    const booking = await Booking.findByIdAndUpdate(
-      bookingId,
-      { 
-        status: newStatus, 
-        updatedAt: new Date() 
-      },
-      { new: true }
-    );
+    const booking = await Booking.findByIdAndUpdate(bookingId, update, { returnDocument: "after" });
 
     if (!booking) {
       return NextResponse.json({ error: "Booking not found" }, { status: 404 });
