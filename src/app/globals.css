@@ -249,3 +249,20 @@
   object-fit: cover;
   display: block;
 }
+
+@media (max-width: 768px) {
+  .scrollers-container {
+    flex-direction: column;
+  }
+
+  .image-carousel {
+    flex-direction: column;   
+    overflow-x: hidden;       
+    overflow-y: auto;         
+    max-height: 400px;       
+  }
+
+  .image-wrapper {
+    min-width: 100%;        
+  }
+}
