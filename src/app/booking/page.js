@@ -659,6 +659,7 @@ const fetchUser = async () => {
                 ))}
               </div>
             )}
+            <BookingPicture />
           </div>
         )}
       </div>
