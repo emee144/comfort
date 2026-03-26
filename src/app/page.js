@@ -110,14 +110,14 @@ export default function HomePage() {
 ];
 
 const galleryImages = [
-  { src: 'https://res.cloudinary.com/dwhga1raw/image/upload/v1774100994/SWZ_6400_oxue9s.jpg', tall: true },
-  { src: 'https://res.cloudinary.com/dwhga1raw/image/upload/v1774100108/SWZ_6241_a9gvkf.jpg', tall: false },
-  { src: 'https://res.cloudinary.com/dwhga1raw/image/upload/v1774100108/SWZ_6292_i9tkq4.jpg', tall: false },
-  { src: 'https://res.cloudinary.com/dwhga1raw/image/upload/v1774100105/SWZ_6237_owzc1h.jpg', tall: false },
-  { src: 'https://res.cloudinary.com/dwhga1raw/image/upload/v1774100104/SWZ_6232_yd0qf4.jpg', tall: false },
-  { src: 'https://res.cloudinary.com/dwhga1raw/image/upload/v1774100107/SWZ_6250_o1wjt5.jpg', tall: false },
-  { src: 'https://res.cloudinary.com/dwhga1raw/image/upload/v1774100105/SWZ_6275_frtni7.jpg', tall: false },
-  { src: 'https://res.cloudinary.com/dwhga1raw/image/upload/v1774128332/SWZ_6339_q1i5fp.jpg', tall: false },
+  { src: 'https://res.cloudinary.com/dwhga1raw/image/upload/f_auto,q_auto,w_800/v1774512209/SWZ_6335_smuv4u.jpg', tall: true },
+  { src: 'https://res.cloudinary.com/dwhga1raw/image/upload/f_auto,q_auto,w_800/v1774100108/SWZ_6241_a9gvkf.jpg', tall: false },
+  { src: 'https://res.cloudinary.com/dwhga1raw/image/upload/f_auto,q_auto,w_800/v1774100108/SWZ_6292_i9tkq4.jpg', tall: false },
+  { src: 'https://res.cloudinary.com/dwhga1raw/image/upload/f_auto,q_auto,w_800/v1774100105/SWZ_6237_owzc1h.jpg', tall: false },
+  { src: 'https://res.cloudinary.com/dwhga1raw/image/upload/f_auto,q_auto,w_800/v1774128331/SWZ_6347_jopc1w.jpg', tall: false },
+  { src: 'https://res.cloudinary.com/dwhga1raw/image/upload/f_auto,q_auto,w_800/v1774100107/SWZ_6250_o1wjt5.jpg', tall: false },
+  { src: 'https://res.cloudinary.com/dwhga1raw/image/upload/f_auto,q_auto,w_800/v1774100105/SWZ_6275_frtni7.jpg', tall: false },
+  { src: 'https://res.cloudinary.com/dwhga1raw/image/upload/f_auto,q_auto,w_800/v1774128332/SWZ_6339_q1i5fp.jpg', tall: false },
 ]
 
   return (
@@ -290,6 +290,8 @@ const galleryImages = [
             fill
             sizes="(max-width: 768px) 50vw, 33vw"
             unoptimized
+            loading={i === 0 ? "eager" : "lazy"}
+            priority={i === 0}
             style={{ objectFit: 'cover' }}
             className="group-hover:scale-105 transition-transform duration-700"
           />

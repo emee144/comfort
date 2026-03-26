@@ -174,6 +174,7 @@ function BookingForm({ onBooked }) {
   const today = new Date();
   const [step, setStep] = useState(1);
   const [publicBookings, setPublicBookings] = useState([]);
+  const [userBookings, setUserBookings] = useState([]);
   const [form, setForm] = useState({
     name: "", phone: "", roomType: "", units: 1, checkIn: null, checkOut: null,
   });
@@ -181,21 +182,42 @@ function BookingForm({ onBooked }) {
   const [availabilityError, setAvailabilityError] = useState("");
 
   // Fetch availability on mount
-  useEffect(() => {
-    fetch("/api/auth/bookings/calendar")
-      .then(r => r.json())
-      .then(d => setPublicBookings(d.bookings || []))
-      .catch(() => {});
-  }, []);
+useEffect(() => {
+  const fetchBookings = async () => {
+    try {
+      const res = await fetch("/api/auth/bookings/calendar");
+      const data = await res.json();
+      setPublicBookings(data.bookings || []);
+    } catch (err) {
+      console.error("Failed to fetch bookings", err);
+    }
+  };
+
+  fetchBookings();
+}, []);
+
+useEffect(() => {
+  const fetchUserBookings = async () => {
+    try {
+      const res = await fetch("/api/auth/bookings", { credentials: "include" });
+      const data = await res.json();
+      setUserBookings(data.bookings || []);
+    } catch (err) {
+      console.error("Failed to fetch user bookings", err);
+    }
+  };
+
+  fetchUserBookings();
+}, []);
 
   const setField = (k) => (e) => {
-    const value = e.target ? e.target.value : e;
-    setForm(p => ({ ...p, [k]: value }));
-  };
+  const value = e.target ? e.target.value : e;
+  setForm(p => ({ ...p, [k]: k === "units" ? Number(value) : value }));
+};
 
   const n = nights(form.checkIn, form.checkOut);
   const rate = RATES[form.roomType] || 0;
-  const amount = n * rate * (form.units || 1);
+  const amount = n * rate * (Number(form.units) || 1);
 
   const checkAvailability = () => {
     if (!form.checkIn || !form.checkOut || !form.roomType) return true;
@@ -227,6 +249,7 @@ function BookingForm({ onBooked }) {
       const res = await fetch("/api/auth/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ ...form, amount }),
       });
       const data = await res.json();
@@ -481,7 +504,9 @@ export default function DashboardPage() {
   const fetchBookings = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/bookings");
+      const res = await fetch("/api/auth/bookings", {
+        credentials: "include",
+      });
       const data = await res.json();
       setBookings(data.bookings || []);
     } catch (e) {

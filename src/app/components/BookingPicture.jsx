@@ -4,17 +4,15 @@ import React from 'react';
 
 export default function BookingPicture() {
   const twoBedroomImages = [
-    "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1572120360610-d971b9b7c6b3?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1598928506316-8a3c1f5bb0c0?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1570129477492-45c003edd2be?auto=format&fit=crop&w=800&q=80"
+    "https://res.cloudinary.com/dwhga1raw/image/upload/v1774512207/SWZ_6294_jzc8dw.jpg",
+    "https://res.cloudinary.com/dwhga1raw/image/upload/v1774128331/SWZ_6347_jopc1w.jpg",
+    "https://res.cloudinary.com/dwhga1raw/image/upload/v1774100107/SWZ_6250_o1wjt5.jpg"
   ];
 
   const selfContainImages = [
-    "https://images.unsplash.com/photo-1580587771525-78b9dba3b914?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1616628189656-f72a7b9df7ef?auto=format&fit=crop&w=800&q=80",
-    "https://images.unsplash.com/photo-1549187774-b4b0f2d68b3c?auto=format&fit=crop&w=800&q=80"
+    "https://res.cloudinary.com/dwhga1raw/image/upload/v1774514417/SWZ_6197_jq1pm5.jpg",
+    "https://res.cloudinary.com/dwhga1raw/image/upload/v1774514416/SWZ_6184_r0izdv.jpg",
+    "https://res.cloudinary.com/dwhga1raw/image/upload/v1774511168/SWZ_6071_jhrkig.jpg"
   ];
 
   return (

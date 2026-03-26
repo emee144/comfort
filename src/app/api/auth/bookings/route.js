@@ -9,9 +9,19 @@ const BOOKING_HOLD_MINUTES = 15;
 export async function GET(req) {
   try {
     const user = await getCurrentUser();
+
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    if (user.isAdmin) {
+      return NextResponse.json(
+        { error: "Admins cannot access this route" },
+        { status: 403 }
+      );
+    }
+
+    console.log("GET user._id:", user._id);
 
     await connectDB();
 
@@ -27,7 +37,9 @@ export async function GET(req) {
       }
     );
 
-    const bookings = await Booking.find({ userId: user._id }).sort({ createdAt: -1 }).lean();
+    const bookings = await Booking.find({ userId: user._id })
+      .sort({ createdAt: -1 })
+      .lean();
 
     return NextResponse.json({ bookings });
 
@@ -108,7 +120,7 @@ export async function POST(req) {
       userId: user._id,
       name,
       phone,
-      email: user.email || "",
+      email: user.email,
       roomType,
       units,
       checkIn: checkInDate,

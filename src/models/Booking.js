@@ -11,8 +11,8 @@ const BookingSchema = new mongoose.Schema(
     checkIn:           { type: Date,   required: true },
     checkOut:          { type: Date,   required: true },
     amount:            { type: Number, required: true },
-    paymentStatus:     { type: String, enum: ["pending", "confirmed", "rejected"], default: "pending" },
-    status:            { type: String, enum: ["awaiting_confirmation", "confirmed", "rejected"], default: "awaiting_confirmation" },
+    paymentStatus:     { type: String, enum: ["pending", "confirmed", "rejected", "expired", "revoked"], default: "pending" },
+    status:            { type: String, enum: ["awaiting_confirmation", "confirmed", "rejected", "expired", "revoked"], default: "awaiting_confirmation" },
   },
   { timestamps: true }
 );
