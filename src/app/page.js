@@ -692,6 +692,11 @@ const galleryImages = [
       text: 'info@comfortserene.com',
       link: 'mailto:info@comfortserene.com',
     },
+     {
+    icon: <FaEnvelope className="text-[#C9A84C]" />,
+    text: 'support@comfortserene.com',
+    link: 'mailto:support@comfortserene.com',
+  },
     {
       icon: <FaMapMarkerAlt className="text-[#C9A84C]" />,
       text: 'Ibadan, Oyo State',
