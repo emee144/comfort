@@ -1,7 +1,5 @@
 'use client'
-
 import React from 'react';
-
 export default function BookingPicture() {
   const twoBedroomImages = [
     "https://res.cloudinary.com/dwhga1raw/image/upload/v1774512207/SWZ_6294_jzc8dw.jpg",

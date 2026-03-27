@@ -3,7 +3,13 @@
 import { useState, useEffect, useRef } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import BookingPicture from "../components/BookingPicture";
+
+import dynamic from "next/dynamic";
+
+const BookingPicture = dynamic(() => import("../components/BookingPicture"), {
+  ssr: false,
+  loading: () => null, 
+});
 const RATES = { "2-bedroom": 100000, selfcontain: 70000 };
 const TOTAL_UNITS = { "2-bedroom": 4, selfcontain: 1 };
 

@@ -307,6 +307,71 @@ const galleryImages = [
   </div>
 </section>
 
+      {/* ══════════════ VIDEO TOUR ══════════════ */}
+      <section
+        id="video"
+        className="py-28 px-6 md:px-16 bg-[#0f0f0f]"
+        data-section="video"
+        ref={ref('video')}
+      >
+        <div className={`max-w-6xl mx-auto transition-all duration-1000 ${reveal('video')}`}>
+
+          {/* Header */}
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-14">
+            <div>
+              <div className="section-label">Video Tour</div>
+              <h2 className="font-playfair text-4xl md:text-5xl font-normal leading-tight">
+                See It <em className="text-[#C9A84C]">For Yourself</em>
+              </h2>
+              <p className="text-white/40 text-sm mt-4 max-w-md leading-relaxed">
+                Take a virtual walk through every corner of the apartment before you book.
+              </p>
+            </div>
+            <a href="#booking" className="btn-gold mt-6 md:mt-0 self-start">
+              Book Now
+            </a>
+          </div>
+
+          {/* Video Embed */}
+          <div className="relative w-full rounded-2xl overflow-hidden border border-white/8 shadow-[0_0_80px_rgba(201,168,76,0.08)]">
+            {/* Gold top line accent */}
+            <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#C9A84C] to-transparent z-10" />
+
+            {/* 16:9 responsive wrapper */}
+            <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+              <iframe
+                src="https://www.youtube.com/embed/gtrvBZSZ44Y?rel=0&modestbranding=1&color=white"
+                title="Comfort Service Apartment — Video Tour"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                className="absolute inset-0 w-full h-full border-0"
+                loading="lazy"
+              />
+            </div>
+          </div>
+
+          {/* Feature tags below video */}
+          <div className="flex flex-wrap justify-center gap-3 mt-8">
+            {[
+              { icon: '🛏️', text: '2-Bedroom Tour' },
+              { icon: '🛋️', text: 'Living & Dining' },
+              { icon: '🍳', text: 'Full Kitchen' },
+              { icon: '🚿', text: 'Bathrooms' },
+              { icon: '🌿', text: 'Surroundings' },
+            ].map((t) => (
+              <div
+                key={t.text}
+                className="flex items-center gap-2 border border-white/10 px-5 py-2.5 text-xs text-white/50
+                           hover:border-[#C9A84C]/40 hover:text-white/70 transition-all rounded-full"
+              >
+                <span>{t.icon}</span> {t.text}
+              </div>
+            ))}
+          </div>
+
+        </div>
+      </section>
+
       {/* ══════════════ AMENITIES ══════════════ */}
       <section id="amenities" className="py-28 px-6 md:px-16 bg-[#0f0f0f]"
         data-section="amenities" ref={ref('amenities')}>
@@ -386,7 +451,7 @@ const galleryImages = [
 
       <div className="space-y-5">
         <div>
-          <label className="block text-[10px] tracking-[0.2em] uppercase text-white/40 mb-2">
+          <label className="block text-[10px] tracking-[0.2em] uppercase text-white/70 mb-2">
             Email Address
           </label>
           <input 
@@ -397,7 +462,7 @@ const galleryImages = [
         </div>
 
         <div>
-          <label className="block text-[10px] tracking-[0.2em] uppercase text-white/40 mb-2">
+          <label className="block text-[10px] tracking-[0.2em] uppercase text-white/70 mb-2">
             Phone Number
           </label>
           <input 
@@ -409,7 +474,7 @@ const galleryImages = [
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-[10px] tracking-[0.2em] uppercase text-white/40 mb-2">
+            <label className="block text-[10px] tracking-[0.2em] uppercase text-white/70 mb-2">
               Check-In
             </label>
             <input 
@@ -420,7 +485,7 @@ const galleryImages = [
             />
           </div>
           <div>
-            <label className="block text-[10px] tracking-[0.2em] uppercase text-white/40 mb-2">
+            <label className="block text-[10px] tracking-[0.2em] uppercase text-white/70 mb-2">
               Check-Out
             </label>
             <input 
@@ -461,6 +526,7 @@ const galleryImages = [
     </div>
   </div>
 </section>
+
       {/* ══════════════ LOCATION ══════════════ */}
       <section
   id="location"
@@ -569,7 +635,7 @@ const galleryImages = [
 
             {/* Review Text */}
             <p className="text-white/60 text-[15px] leading-[1.65] italic mb-8 break-words">
-              “{r.text}”
+              "{r.text}"
             </p>
 
             {/* Reviewer Info */}
