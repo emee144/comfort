@@ -10,7 +10,10 @@ export async function POST(req) {
     if (!email || !password) {
       return NextResponse.json({ message: 'All fields are required' }, { status: 400 })
     }
-
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+if (!emailRegex.test(email)) {
+  return NextResponse.json({ message: 'Invalid email format' }, { status: 400 });
+}
     await connectDB()
 
     const existingUser = await User.findOne({ email })
