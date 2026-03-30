@@ -530,21 +530,11 @@ export default function DashboardPage() {
   };
 const fetchUser = async () => {
   try {
-    const res = await fetch("/api/auth/me", {
-      credentials: "include",
-    });
-
-    console.log("STATUS:", res.status);
+    const res = await fetch("/api/auth/me", { credentials: "include" });
+    if (!res.ok) return; 
 
     const data = await res.json();
-    console.log("DATA:", data);
-
-    if (!res.ok) {
-      console.log("NOT AUTHENTICATED");
-      return;
-    }
-
-    setUser(data.user);
+    if (data.user) setUser(data.user);
   } catch (e) {
     console.error(e);
   }
