@@ -12,6 +12,7 @@
   --foreground: #ededed;
   --font-playfair: 'Playfair Display', serif;
   --font-dm: 'DM Sans', sans-serif;
+  --text-base: 1rem;
 }
 
 @layer base {
