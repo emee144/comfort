@@ -10,8 +10,8 @@ const BookingPicture = dynamic(() => import("../components/BookingPicture"), {
   ssr: false,
   loading: () => null, 
 });
-const RATES = { "2-bedroom": 100000, selfcontain: 70000 };
-const TOTAL_UNITS = { "2-bedroom": 4, selfcontain: 1 };
+const RATES = { "2-bedroom-upstairs": 120000, "2-bedroom-downstairs": 100000, selfcontain: 50000 };
+const TOTAL_UNITS = { "2-bedroom-upstairs": 2, "2-bedroom-downstairs": 2, selfcontain: 1 };
 
 const fmt = (d) =>
   d ? new Date(d).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" }) : "—";
@@ -135,7 +135,7 @@ function Receipt({ booking, onClose }) {
             <div className="mb-6">
               <div className="text-[9px] tracking-[0.2em] uppercase text-white/30 mb-3">Stay Details</div>
               {[
-                ["Room Type", booking.roomType === "2-bedroom" ? "2 Bedroom" : "Self Contain"],
+                ["Room Type", ROOM_LABELS[booking.roomType]],
                 ["Units", booking.units],
                 ["Check-in", fmt(booking.checkIn)],
                 ["Check-out", fmt(booking.checkOut)],
@@ -175,6 +175,12 @@ function Receipt({ booking, onClose }) {
     </div>
   );
 }
+
+const ROOM_LABELS = {
+  "2-bedroom-upstairs": "2 Bedroom Upstairs",
+  "2-bedroom-downstairs": "2 Bedroom Downstairs",
+  selfcontain: "Self Contain",
+};
 
 function BookingForm({ onBooked }) {
   const today = new Date();
@@ -348,8 +354,9 @@ useEffect(() => {
               <select className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white"
                 value={form.roomType} onChange={setField("roomType")}>
                 <option value="">Select a room</option>
-                <option value="2-bedroom">2 Bedroom — ₦100,000/night</option>
-                <option value="selfcontain">Self Contain — ₦70,000/night</option>
+<option value="2-bedroom-upstairs">2 Bedroom Upstairs — ₦120,000/night</option>
+<option value="2-bedroom-downstairs">2 Bedroom Downstairs — ₦100,000/night</option>
+<option value="selfcontain">Self Contain — ₦50,000/night</option>
               </select>
             </div>
             {form.roomType && (
@@ -425,9 +432,9 @@ useEffect(() => {
           <div className="bg-[#C9A84C]/5 border border-[#C9A84C]/20 rounded-xl p-5 space-y-3 mb-2">
             <p className="text-[10px] tracking-widest uppercase text-[#C9A84C] mb-3">Transfer Details</p>
             {[
-              ["Bank", "First Bank"],
-              ["Account Name", "Comfort Service Apartment"],
-              ["Account Number", "1234567890"],
+              ["Bank", "GT Bank"],
+              ["Account Name", "Haastrup Oludotun Bolatito"],
+              ["Account Number", "0448971134"],
               ["Amount to Pay", `₦${amount.toLocaleString()}`],
             ].map(([l, v]) => (
               <div key={l} className="flex justify-between text-sm border-b border-white/5 pb-2">
@@ -464,7 +471,7 @@ useEffect(() => {
             {[
               ["Name", form.name],
               ["Phone", form.phone],
-              ["Room Type", form.roomType === "2-bedroom" ? "2 Bedroom" : "Self Contain"],
+              ["Room Type", ROOM_LABELS[form.roomType]],
               ["Units", form.units],
               ["Check-in", fmt(form.checkIn)],
               ["Check-out", fmt(form.checkOut)],
@@ -642,7 +649,7 @@ const fetchUser = async () => {
                         {statusPill(b.status)}
                       </div>
                       <div className="text-white/40 text-xs">
-                        {b.roomType === "2-bedroom" ? "2 Bedroom" : "Self Contain"} · {fmt(b.checkIn)} → {fmt(b.checkOut)} · {nights(b.checkIn, b.checkOut)} night(s) · {b.units} unit{b.units > 1 ? "s" : ""}
+                        {ROOM_LABELS[b.roomType]} · {fmt(b.checkIn)} → {fmt(b.checkOut)} · {nights(b.checkIn, b.checkOut)} night(s) · {b.units} unit{b.units > 1 ? "s" : ""}
                       </div>
                       <div className="text-[#C9A84C] text-sm font-semibold">₦{Number(b.amount).toLocaleString()}</div>
                     </div>

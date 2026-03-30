@@ -106,15 +106,25 @@ export async function POST(req) {
       }
     });
 
-    const TOTAL_UNITS = { "2-bedroom": 4, selfcontain: 1 };
+   const TOTAL_UNITS = {
+  "2-bedroom-upstairs": 2,
+  "2-bedroom-downstairs": 2,
+  selfcontain: 1,
+};
 
-    for (const dateStr in dayUnits) {
-      if ((dayUnits[dateStr] + units) > TOTAL_UNITS[roomType]) {
-        return NextResponse.json({
-          error: `Not enough ${roomType === "2-bedroom" ? "2 Bedroom" : "Self Contain"} units available for ${dateStr}`
-        }, { status: 409 });
-      }
-    }
+const ROOM_LABELS = {
+  "2-bedroom-upstairs": "2 Bedroom Upstairs",
+  "2-bedroom-downstairs": "2 Bedroom Downstairs",
+  selfcontain: "Self Contain",
+};
+
+for (const dateStr in dayUnits) {
+  if ((dayUnits[dateStr] + units) > TOTAL_UNITS[roomType]) {
+    return NextResponse.json({
+      error: `Not enough ${ROOM_LABELS[roomType]} units available for ${dateStr}`,
+    }, { status: 409 });
+  }
+}
 
     const booking = await Booking.create({
       userId: user._id,

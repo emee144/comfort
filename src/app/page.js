@@ -706,7 +706,7 @@ const galleryImages = [
       {/* socials */}
       <div className="flex gap-4">
         {[
-          { icon: <FaFacebookF />, href: '#' },
+          { icon: <FaFacebookF />, href: 'https://www.facebook.com/profile.php?id=61577461775293' },
           { icon: <FaInstagram />, href: 'https://www.instagram.com/comfo.rtapartment/' },
           { icon: <FaWhatsapp />,  href: 'https://wa.me/2349135415924' },
         ].map((s, i) => (

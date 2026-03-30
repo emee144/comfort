@@ -9,6 +9,12 @@ const nights = (ci, co) => {
   return Math.max(0, Math.round((new Date(co) - new Date(ci)) / 86400000));
 };
 
+const ROOM_LABELS = {
+  "2-bedroom-upstairs":   "2 Bedroom Upstairs",
+  "2-bedroom-downstairs": "2 Bedroom Downstairs",
+  selfcontain:            "Self Contain",
+};
+
 const STATUS_MAP = {
   awaiting_confirmation: { label: "Awaiting",     cls: "bg-amber-500/15 text-amber-400 border border-amber-500/30" },
   confirmed:             { label: "Confirmed ✓",  cls: "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30" },
@@ -157,7 +163,7 @@ function ConfirmModal({ booking, action, onConfirm, onCancel, loading }) {
         <div className="bg-white/3 border border-white/8 rounded-xl p-4 mb-6 space-y-2 text-sm">
           {[
             ["Guest",  booking.name],
-            ["Room",   booking.roomType === "2-bedroom" ? "2 Bedroom" : "Self Contain"],
+            ["Room", ROOM_LABELS[booking.roomType] || booking.roomType],
             ["Dates",  `${fmt(booking.checkIn)} → ${fmt(booking.checkOut)}`],
             ["Amount", `₦${Number(booking.amount).toLocaleString()}`],
           ].map(([l, v]) => (
@@ -202,7 +208,7 @@ function BookingCard({ booking, onAction }) {
               <Pill status={booking.status} />
             </div>
             <div className="text-white/50 text-xs">
-              {booking.roomType === "2-bedroom" ? "2 Bedroom" : "Self Contain"} · {fmt(booking.checkIn)} → {fmt(booking.checkOut)} · {n} night(s)
+              {ROOM_LABELS[booking.roomType] || booking.roomType} · {fmt(booking.checkIn)} → {fmt(booking.checkOut)} · {n} night(s)
             </div>
             <div className="text-[#C9A84C] text-sm font-semibold">
               ₦{Number(booking.amount).toLocaleString()}
