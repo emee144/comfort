@@ -6,6 +6,9 @@ export default{
     './components/**/*.{js,ts,jsx,tsx}',
     "./src/app/globals.css", 
   ],
+   safelist: [
+    'text-xs', 'text-sm', 'text-base', 'text-lg', 'text-xl'
+  ],
   theme: {
     extend: {},
   },
