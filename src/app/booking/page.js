@@ -531,7 +531,19 @@ export default function DashboardPage() {
 const fetchUser = async () => {
   try {
     const res = await fetch("/api/auth/me", { credentials: "include" });
-    if (!res.ok) return; 
+
+    if (res.status === 401) {
+      // wait 500ms and retry once before giving up
+      await new Promise(r => setTimeout(r, 500));
+      const retry = await fetch("/api/auth/me", { credentials: "include" });
+      if (retry.status === 401) {
+        window.location.href = "/login";
+        return;
+      }
+      const retryData = await retry.json();
+      if (retryData.user) setUser(retryData.user);
+      return;
+    }
 
     const data = await res.json();
     if (data.user) setUser(data.user);
